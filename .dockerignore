@@ -1,0 +1,9 @@
+.git
+.github
+.cursor
+**/.vs
+**/bin
+**/obj
+coverage
+planning
+tst
