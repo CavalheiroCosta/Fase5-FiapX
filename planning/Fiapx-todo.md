@@ -31,7 +31,7 @@ O primeiro corte prova a Auth. O pull request quebra se ela não compila ou se a
 
 ## Auth API
 
-Serviço .NET. Cuida do acesso do usuário e emite o token. Não processa vídeo.
+Serviço .NET. Cuida do acesso do usuário e emite o token. Não processa vídeo. O guia deste corte está em `planning/auth.md`.
 
 - [ ] Persistir usuário, e-mail, credencial e acesso no PostgreSQL de usuários.
 - [ ] Login com usuário e senha. Esse endpoint não exige token.
