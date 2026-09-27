@@ -1,3 +1,4 @@
+using Auth.Application.Login;
 using Auth.Application.Usuarios;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<ListarUsuariosUseCase>();
         services.AddScoped<AlterarUsuarioUseCase>();
         services.AddScoped<RemoverUsuarioUseCase>();
+        services.AddScoped<LoginUseCase>();
         return services;
     }
 }

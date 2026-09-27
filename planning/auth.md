@@ -7,8 +7,8 @@ A Auth API cadastra os usuários, autentica e emite o token. O resto do sistema 
 ## O que já existe
 
 - Solution .NET 10 `Fase5-FiapX.slnx`, com Api, Application, Domain e Infra.
-- Projeto `src/Auth/Api` (`Auth.Api`). O cadastro cria, consulta, lista, altera e remove usuários sem token.
-- Testes em `tst/Auth/Tests`. Cobrem o cadastro, as recusas e o host. O host de teste não sobe PostgreSQL.
+- Projeto `src/Auth/Api` (`Auth.Api`). O login emite o token. O cadastro cria, consulta, lista, altera e remove usuários e exige o token da conta `Adm`.
+- Testes em `tst/Auth/Tests`. Cobrem o cadastro, o login, a recusa, a leitura do token e o host. O host de teste não sobe PostgreSQL.
 - Imagem em `src/Auth/Api/Dockerfile`. O CI compila a tag local `fase5-auth:ci` e não publica.
 - Workflow `.github/workflows/ci.yml`: restore, build Release, testes OpenCover da Auth, falha abaixo de 80% de linhas, SonarCloud com quality gate e build da imagem.
 - O script `.github/scripts/check-auth-coverage.ps1` lê o OpenCover e mede os módulos da Auth (`Auth.Api` e o que começa com `Auth.`). O Sonar exclui `Program.cs` da cobertura. A trava de 80% do workflow não depende do Sonar.
@@ -50,16 +50,16 @@ A criação não recebe o Guid. A resposta devolve o Guid gerado. Consultar, alt
 
 O login não muda depois de criado. A senha não volta na consulta, na lista nem na alteração. Login repetido ou e-mail repetido não grava outro usuário. Remover a conta `Adm` não acontece.
 
-A primeira entrega desses endpoints não exige token.
+Esses endpoints exigem o token da conta `Adm` no cabeçalho `Authorization: Bearer`. Sem token válido, ou com token de outro usuário, o cadastro não acontece. `POST /login` continua sem token.
 
 ## Ordem
 
-1. Cadastro, sem token na requisição. A persistência fica atrás de uma interface e grava no PostgreSQL de usuários. O Docker Compose deste passo sobe só esse banco. A decisão está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
-2. Login, que confere usuário e senha e emite o token.
-3. Leitura do token, que recupera o usuário e o e-mail.
-4. Os endpoints de cadastro passam a exigir o token da conta `Adm`.
+1. Cadastro, sem token na requisição. A persistência fica atrás de uma interface e grava no PostgreSQL de usuários. O Docker Compose deste passo sobe só esse banco. A decisão está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`. Feito.
+2. Login, que confere usuário e senha e emite o token. Feito.
+3. Leitura do token, que recupera o usuário e o e-mail. Feito.
+4. Os endpoints de cadastro exigem o token da conta `Adm`. Feito.
 
-O formato do token continua em aberto, inclusive se ele é assinado ou criptografado. O que já está definido é o conteúdo: usuário e e-mail. No passo 4, a conta `Adm` é reconhecida pelo usuário carregado no token.
+O token é um JWT assinado com HMAC. Vale 30 minutos. O conteúdo é o login e o e-mail. Não é criptografado e não fica gravado no banco. Não há revogação: expirado, o usuário autentica de novo. A conta `Adm` é reconhecida pelo login `Adm` carregado no token. A decisão está em `docs/adrs/ADR-006-token-jwt-hmac.md`.
 
 ## Conceitos
 
@@ -68,15 +68,15 @@ O formato do token continua em aberto, inclusive se ele é assinado ou criptogra
 - **Acesso:** permissão daquele usuário para entrar e usar o sistema. Neste corte, o usuário cadastrado tem acesso. A conta `Adm` também tem.
 - **Administrador:** a conta `Adm`. Só ela cadastra usuários.
 - **Identidade autenticada:** confirmação de quem está agindo depois de um acesso válido. Os outros contextos usam essa identidade para saber de quem é cada vídeo.
-- **Token:** o que o usuário envia em cada requisição depois do login. Carrega a identidade autenticada, inclusive o usuário e o e-mail.
+- **Token:** JWT assinado com HMAC que o usuário envia em cada requisição depois do login. Carrega a identidade autenticada, o login e o e-mail, e vale 30 minutos.
 
 Fora da Auth, autorização continua sendo acesso válido ou não. O papel de administrador vale para o cadastro, dentro desta API.
 
 ## Login
 
-O login recebe a credencial e devolve o token. Não exige token na requisição. Entra no passo 2, depois do cadastro.
+O login é `POST /login`. Recebe a credencial e devolve o token. Não exige token na requisição.
 
-Senha errada ou usuário inexistente não gera token. A senha não volta na resposta.
+Senha errada ou usuário inexistente respondem a mesma recusa e não geram token. A senha não volta na resposta. A leitura usa `Authorization: Bearer`. Token ausente, inválido ou expirado não produz identidade.
 
 Envio, listagem e download, na Video API, exigem esse token. Esta API não implementa esses endpoints.
 
@@ -95,9 +95,9 @@ A senha é guardada com o PasswordHasher do .NET (PBKDF2). A decisão está em `
 O serviço da Auth usa as quatro camadas da Fase 4. A decisão está em `docs/adrs/ADR-001-camadas-auth.md`.
 
 - **Api** — host HTTP, em `src/Auth/Api`.
-- **Application** — casos de uso do cadastro e, nos passos seguintes, do login e da leitura do token.
-- **Domain** — usuário, credencial, acesso e conta administradora.
-- **Infra** — persistência no PostgreSQL de usuários, atrás da interface que o teste usa.
+- **Application** — casos de uso do cadastro e do login. O login confere a senha e pede o token.
+- **Domain** — usuário, credencial, acesso, conta administradora e o `TokenService`, que emite e lê o token.
+- **Infra** — persistência no PostgreSQL de usuários e a assinatura HMAC, atrás das interfaces que o teste usa.
 
 A imagem continua publicando `Auth.Api`. Application, Domain e Infra entram como projetos referenciados por ela.
 
@@ -112,8 +112,7 @@ A imagem continua publicando `Auth.Api`. Application, Domain e Infra entram como
 Não implementar:
 
 - Autocadastro.
-- Encerrar ou revogar o acesso. Enquanto isso estiver aberto, basta autenticar de novo.
-- Exigir token no cadastro antes do passo 4.
+- Revogação de token. Expirado, basta autenticar de novo.
 - Envio, listagem, download e status de vídeo.
 - Processamento dos frames e geração do ZIP.
 - E-mail de erro. Quem avisa é a Video API.
@@ -123,6 +122,6 @@ Não implementar:
 
 No passo do cadastro, cobrir criar, consultar, listar, alterar e remover, e as recusas: login repetido, e-mail repetido e remover a conta `Adm`.
 
-No passo do login, cobrir a emissão do token e a recusa quando a senha está errada ou o usuário não existe.
+No login, cobrir a emissão do token, a recusa quando a senha está errada ou o usuário não existe, a leitura e a exigência do token da conta `Adm` no cadastro.
 
 A cobertura de linhas da Auth permanece em pelo menos 80%. O CI já barra o pull request abaixo disso.

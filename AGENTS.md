@@ -14,8 +14,8 @@ Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Aut
 
 ## Fluxo
 
-- A conta `Adm` cadastra os usuários. O cadastro começa sem token e, depois da leitura do token, passa a exigir o token dessa conta.
-- A Auth API confere usuário e senha e emite o token. O login não exige token.
+- A conta `Adm` cadastra os usuários. O cadastro exige o token dessa conta. O login não exige token.
+- A Auth API confere usuário e senha e emite um JWT assinado com HMAC, válido por 30 minutos, com login e e-mail. Expirado, o usuário autentica de novo. Não há revogação.
 - Envio, listagem e download exigem o token na requisição. O token traz o usuário e o e-mail.
 - A Video API grava o vídeo no MinIO, o registro no PostgreSQL de vídeos e publica na fila de processamento só o identificador e o caminho.
 - O processor consome essa fila, marca o vídeo no Redis, quebra o vídeo, grava o ZIP no MinIO e publica o resultado na fila de status.

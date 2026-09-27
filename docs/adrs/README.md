@@ -9,5 +9,6 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-003](./ADR-003-postgres-usuarios-no-compose.md) | PostgreSQL de usuários no Compose, com o cadastro |
 | [ADR-004](./ADR-004-senha-com-passwordhasher.md) | Senha guardada com o PasswordHasher do .NET |
 | [ADR-005](./ADR-005-identificador-guid.md) | Identificador do usuário é um Guid |
+| [ADR-006](./ADR-006-token-jwt-hmac.md) | Token JWT assinado com HMAC |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.
