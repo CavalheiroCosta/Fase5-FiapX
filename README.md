@@ -16,13 +16,13 @@ A Auth usa as camadas Api, Application, Domain e Infra, em `src/Auth`. Cada proj
 
 ## Ambiente local
 
-O Compose na raiz sobe o PostgreSQL de usuários:
+O Compose na raiz sobe o PostgreSQL de usuários e a Auth API:
 
 ```powershell
 docker compose up -d
 ```
 
-Banco de vídeos, Redis, RabbitMQ, MinIO, Prometheus e Grafana entram depois. A Auth, em desenvolvimento, grava em `localhost:5432`, banco `fiapx_usuarios`.
+A Auth fica em `http://localhost:5298` e grava no banco `fiapx_usuarios`. Banco de vídeos, Redis, RabbitMQ, MinIO, Prometheus e Grafana entram depois. Fora do Compose, em desenvolvimento, a Auth grava em `localhost:5432`.
 
 ## Testes
 

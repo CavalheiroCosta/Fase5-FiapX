@@ -12,7 +12,7 @@ A Auth API cadastra os usuários, autentica e emite o token. O resto do sistema 
 - Imagem em `src/Auth/Api/Dockerfile`. O CI compila a tag local `fase5-auth:ci` e não publica.
 - Workflow `.github/workflows/ci.yml`: restore, build Release, testes OpenCover da Auth, falha abaixo de 80% de linhas, SonarCloud com quality gate e build da imagem.
 - O script `.github/scripts/check-auth-coverage.ps1` lê o OpenCover e mede os módulos da Auth (`Auth.Api` e o que começa com `Auth.`). O Sonar exclui `Program.cs` da cobertura. A trava de 80% do workflow não depende do Sonar.
-- `compose.yaml` sobe o PostgreSQL de usuários. Não há fila, MinIO, Redis nem monitoria neste repositório.
+- `compose.yaml` sobe o PostgreSQL de usuários e a Auth API. Não há fila, MinIO, Redis nem monitoria neste repositório.
 
 ## Conta administradora
 

@@ -12,7 +12,7 @@ O planejamento prevê um Docker Compose com PostgreSQL, Redis, RabbitMQ, MinIO, 
 
 ## Decisão
 
-O Docker Compose nasce com o cadastro da Auth e sobe só o PostgreSQL de usuários. A Auth API grava nesse banco. A conta `Adm` é criada nele na subida, quando ainda não existe.
+O Docker Compose nasce com o cadastro da Auth e sobe o PostgreSQL de usuários e a Auth API. A API grava nesse banco. A conta `Adm` é criada nele na subida, quando ainda não existe. No Compose, a API escuta em `http://localhost:5298`.
 
 O banco de vídeos entra no mesmo Compose quando a Video API existir. Redis, RabbitMQ, MinIO, Prometheus e Grafana continuam fora até os contextos que os usam.
 
