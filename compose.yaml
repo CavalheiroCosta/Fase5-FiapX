@@ -15,5 +15,17 @@ services:
       timeout: 5s
       retries: 10
 
+  auth:
+    build:
+      context: .
+      dockerfile: src/Auth/Api/Dockerfile
+    ports:
+      - "5298:8080"
+    environment:
+      ConnectionStrings__Usuarios: Host=postgres-usuarios;Port=5432;Database=fiapx_usuarios;Username=fiapx;Password=fiapx
+    depends_on:
+      postgres-usuarios:
+        condition: service_healthy
+
 volumes:
   fiapx_usuarios:
