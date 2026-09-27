@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 env:
   DOTNET_VERSION: 10.0.x
@@ -21,17 +22,53 @@ env:
 
 jobs:
   ci:
-    name: Restore, build e cobertura da Auth
+    name: Restore, build, cobertura e SonarCloud
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Exige token e chaves do SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+        run: |
+          if [ -z "$SONAR_TOKEN" ] || [ -z "$SONAR_ORGANIZATION" ] || [ -z "$SONAR_PROJECT_KEY" ]; then
+            echo "::error::Configure o secret SONAR_TOKEN e as variables SONAR_ORGANIZATION e SONAR_PROJECT_KEY."
+            exit 1
+          fi
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instala o SonarScanner
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Inicia a análise do SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          dotnet sonarscanner begin \
+            /k:"${{ vars.SONAR_PROJECT_KEY }}" \
+            /o:"${{ vars.SONAR_ORGANIZATION }}" \
+            /d:sonar.token="${SONAR_TOKEN}" \
+            /d:sonar.host.url="https://sonarcloud.io" \
+            /d:sonar.cs.opencover.reportsPaths="${{ env.COVERAGE_DIR }}/**/coverage.opencover.xml" \
+            /d:sonar.coverage.exclusions="**/Program.cs" \
+            /d:sonar.exclusions="**/bin/**,**/obj/**" \
+            /d:sonar.qualitygate.wait=true
 
       - name: Restore
         run: dotnet restore "${{ env.SOLUTION }}"
@@ -53,3 +90,8 @@ jobs:
       - name: Falha se a cobertura de linhas da Auth for menor que 80%
         shell: pwsh
         run: ./.github/scripts/check-auth-coverage.ps1 -CoverageDir "${{ env.COVERAGE_DIR }}"
+
+      - name: Encerra a análise do SonarCloud
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
