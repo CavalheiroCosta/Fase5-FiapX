@@ -21,7 +21,7 @@ O primeiro corte prova a Auth. O pull request quebra se ela não compila ou se a
 
 ### Em seguida, no mesmo workflow
 
-- [ ] SonarCloud com quality gate, no modelo da Fase 4. Exige `SONAR_TOKEN` e as variáveis do projeto.
+- [x] SonarCloud com quality gate, no modelo da Fase 4. Exige `SONAR_TOKEN` e as variáveis do projeto. O workflow espera o quality gate. A cobertura de linhas da Auth continua barrando o pull request sem depender do Sonar.
 - [ ] Build da imagem Docker da Auth no CI, sem publicar. A tag local basta para provar que a imagem nasce.
 
 ### Fora deste corte
