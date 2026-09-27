@@ -19,10 +19,12 @@ env:
   SOLUTION: Fase5-FiapX.slnx
   AUTH_TEST_PROJECT: tst/Auth/Tests/Auth.Tests.csproj
   COVERAGE_DIR: ${{ github.workspace }}/coverage
+  DOCKERFILE_PATH: src/Auth/Api/Dockerfile
+  LOCAL_IMAGE_NAME: fase5-auth:ci
 
 jobs:
   ci:
-    name: Restore, build, cobertura e SonarCloud
+    name: Restore, build, cobertura, SonarCloud e imagem
     runs-on: ubuntu-latest
 
     steps:
@@ -95,3 +97,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: dotnet sonarscanner end /d:sonar.token="${SONAR_TOKEN}"
+
+      - name: Build da imagem da Auth
+        run: docker build --file "${{ env.DOCKERFILE_PATH }}" --tag "${{ env.LOCAL_IMAGE_NAME }}" .
