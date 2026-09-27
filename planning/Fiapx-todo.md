@@ -31,17 +31,28 @@ O primeiro corte prova a Auth. O pull request quebra se ela não compila ou se a
 
 ## Auth API
 
-Serviço .NET. Cuida do acesso do usuário e emite o token. Não processa vídeo. O guia deste corte está em `planning/auth.md`.
+Serviço .NET. Cadastra os usuários, cuida do acesso e emite o token. Não processa vídeo. O guia deste corte está em `planning/auth.md`.
 
-- [ ] Persistir usuário, e-mail, credencial e acesso no PostgreSQL de usuários.
+A conta administradora é login `Adm` e senha `Adm`. Ela cadastra os demais usuários, com login, senha, nome e e-mail. Não há autocadastro.
+
+### Agora
+
+- [ ] Camadas Api, Application, Domain e Infra, no modelo da Fase 4.
+- [ ] Cadastro sem token: criar, consultar, listar, alterar e remover.
+- [ ] Persistir login, nome, e-mail, credencial e acesso no PostgreSQL de usuários, atrás de uma interface. A conta `Adm` nasce com o serviço.
+- [ ] Testes unitários do cadastro e das recusas, dentro da cobertura de 80%.
+
+### Em seguida
+
 - [ ] Login com usuário e senha. Esse endpoint não exige token.
 - [ ] Senha errada ou usuário inexistente não emite token.
 - [ ] Token válido carrega o usuário e o e-mail.
-- [ ] Testes unitários do login e da recusa, dentro da cobertura de 80%.
+- [ ] Leitura do token, recuperando o usuário e o e-mail.
+- [ ] Cadastro passa a exigir o token da conta `Adm`.
+- [ ] Testes unitários do login, da recusa e da leitura do token, dentro da cobertura de 80%.
 
 ### Ainda sem decisão
 
-Não implementar até fechar:
-
-- O usuário se cadastra sozinho, ou o acesso é criado para ele?
-- O acesso pode ser encerrado ou revogado, ou basta autenticar de novo?
+- A forma de guardar a senha entra numa ADR no momento do cadastro. O cadastro não devolve a senha.
+- O formato do token entra numa ADR antes da emissão. O cadastro não espera essa escolha.
+- O acesso pode ser encerrado ou revogado, ou basta autenticar de novo? Não implementar revogação enquanto isso estiver aberto.

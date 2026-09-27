@@ -8,7 +8,7 @@ O domínio das três APIs está em definição. Os serviços serão em .NET, num
 
 | Contexto | Estado |
 | --- | --- |
-| Auth API | Em definição |
+| Auth API | Em andamento. O corte está em `planning/auth.md`. |
 | Video API | Em definição |
 | Video Processor API | Em definição |
 
@@ -20,26 +20,28 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 
 ### Conceitos
 
-- **Usuário:** pessoa que usa o sistema. É a dona dos vídeos que enviar. Tem um e-mail, usado pela Video API quando um processamento falha.
-- **Credencial:** usuário e senha usados para provar a identidade.
+- **Usuário:** pessoa que usa o sistema. É a dona dos vídeos que enviar. Tem login, nome e e-mail. O e-mail é usado pela Video API quando um processamento falha.
+- **Credencial:** login e senha usados para provar a identidade.
 - **Acesso:** permissão daquele usuário para entrar e usar o sistema.
+- **Administrador:** a conta `Adm`. Só ela cadastra usuários. A decisão está em `docs/adrs/ADR-002-conta-administradora.md`.
 - **Identidade autenticada:** confirmação de quem está agindo depois de um acesso válido. Os outros contextos usam essa identidade para saber de quem é cada vídeo.
 - **Token:** o que o usuário envia em cada requisição depois do login. Carrega a identidade autenticada, inclusive o usuário e o e-mail.
 
 ### O que faz
 
-- Cria e mantém o acesso de um usuário (quem pode entrar, com qual credencial).
+- Cria e mantém o acesso de um usuário (quem pode entrar, com qual credencial). Quem cadastra é a conta `Adm`. Não há autocadastro.
 - Autentica: confere usuário e senha e, se estiverem corretos, emite o token.
 - O login recebe a credencial e devolve o token. Esse endpoint não exige token.
 - Os endpoints de envio, listagem e download exigem o token na requisição. Sem token válido, a ação não acontece.
-- Persiste usuário, credencial e acesso no Postgres de usuários. Só esta API escreve nessa base.
+- Persiste login, nome, e-mail, credencial e acesso no Postgres de usuários, inclusive a conta `Adm`. Só esta API escreve nessa base.
 
 ### Regras
 
 - Toda ação de vídeo parte de uma requisição com token válido.
 - Senha errada ou usuário inexistente não gera token.
 - O token carrega o usuário e o e-mail, para que a listagem, o download e o aviso de erro sejam do dono daquele vídeo.
-- Autorização, neste momento, significa “acesso válido ou não”. Não há papéis (administrador, operador, etc.).
+- Fora da Auth, autorização significa acesso válido ou não. Dentro da Auth, a conta `Adm` é quem cadastra. O cadastro começa sem token e depois passa a exigi-lo.
+- O serviço da Auth usa as camadas Api, Application, Domain e Infra. A decisão está em `docs/adrs/ADR-001-camadas-auth.md`.
 
 ### Fora deste contexto
 
@@ -49,8 +51,8 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 
 ### Em aberto
 
-- O usuário se cadastra sozinho, ou os acessos são criados para ele?
 - Um acesso pode ser encerrado (sair) e revogado, ou basta autenticar de novo na próxima vez?
+- Qual é o formato do token, e como a senha fica guardada?
 
 ## Video API
 
@@ -158,7 +160,7 @@ Dois Postgres, um por contexto. O storage externo não é banco: lá ficam o ví
 
 Dono: Auth API. A Video API não lê nem escreve aqui. Ela recebe só a identidade autenticada.
 
-Guarda o usuário, o e-mail, a credencial e o acesso.
+Guarda o login, o nome, o e-mail, a credencial e o acesso, inclusive a conta `Adm`.
 
 ### Postgres de vídeos
 

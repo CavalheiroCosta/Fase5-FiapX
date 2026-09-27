@@ -2,7 +2,7 @@
 
 Monorepo do processamento de vídeos da FIAP X. Três serviços .NET: Auth API, Video API e Video Processor API.
 
-Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Auth API está em `planning/auth.md`. O enunciado está em `planning/POSTECH - SOAT - Fase 5 - Hacka.pdf`.
+Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Auth API está em `planning/auth.md`. As decisões estão em `docs/adrs`. O enunciado está em `planning/POSTECH - SOAT - Fase 5 - Hacka.pdf`. A visão geral do repositório está no `README.md`. Cada projeto tem o próprio `README.md`.
 
 ## Git
 
@@ -14,6 +14,7 @@ Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Aut
 
 ## Fluxo
 
+- A conta `Adm` cadastra os usuários. O cadastro começa sem token e, depois da leitura do token, passa a exigir o token dessa conta.
 - A Auth API confere usuário e senha e emite o token. O login não exige token.
 - Envio, listagem e download exigem o token na requisição. O token traz o usuário e o e-mail.
 - A Video API grava o vídeo no MinIO, o registro no PostgreSQL de vídeos e publica na fila de processamento só o identificador e o caminho.
