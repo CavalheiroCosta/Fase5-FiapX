@@ -16,7 +16,7 @@ A Auth usa as camadas Api, Application, Domain e Infra. Hoje só a Api existe, e
 
 ## Ambiente local
 
-O Docker Compose, quando existir, sobe PostgreSQL (banco de usuários e banco de vídeos), Redis, RabbitMQ, MinIO, Prometheus e Grafana. Ainda não há Compose neste repositório.
+O primeiro Docker Compose sobe o PostgreSQL de usuários, junto com o cadastro da Auth. Banco de vídeos, Redis, RabbitMQ, MinIO, Prometheus e Grafana entram depois. Ainda não há Compose neste repositório.
 
 ## Testes
 

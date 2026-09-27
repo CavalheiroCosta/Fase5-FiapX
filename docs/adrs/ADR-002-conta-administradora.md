@@ -16,6 +16,8 @@ O serviço nasce com uma conta administradora.
 
 - Login: `Adm`
 - Senha: `Adm`
+- Nome: `Administrador`
+- E-mail: `adm@adm.com`
 
 Essa conta cadastra os demais usuários. Não há autocadastro. O cadastro pede usuário (login), senha, nome e e-mail. Quem nasce por esse cadastro não é administrador.
 
@@ -36,4 +38,4 @@ Encerrar ou revogar um acesso continua em aberto. Enquanto isso, basta autentica
 
 A senha `Adm` é a senha inicial desta conta no ambiente do trabalho. Não é segredo de produção.
 
-Nenhuma resposta de cadastro ou de login devolve a senha. A forma de guardá-la será decidida numa ADR quando o cadastro for implementado.
+Nenhuma resposta de cadastro ou de login devolve a senha. O hash usa o PasswordHasher do .NET, em `docs/adrs/ADR-004-senha-com-passwordhasher.md`. O registro é um Guid, em `docs/adrs/ADR-005-identificador-guid.md`.

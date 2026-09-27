@@ -20,7 +20,7 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 
 ### Conceitos
 
-- **Usuário:** pessoa que usa o sistema. É a dona dos vídeos que enviar. Tem login, nome e e-mail. O e-mail é usado pela Video API quando um processamento falha.
+- **Usuário:** pessoa que usa o sistema. É a dona dos vídeos que enviar. Tem Guid, login, nome e e-mail. O Guid identifica o registro. O e-mail é usado pela Video API quando um processamento falha.
 - **Credencial:** login e senha usados para provar a identidade.
 - **Acesso:** permissão daquele usuário para entrar e usar o sistema.
 - **Administrador:** a conta `Adm`. Só ela cadastra usuários. A decisão está em `docs/adrs/ADR-002-conta-administradora.md`.
@@ -33,7 +33,7 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 - Autentica: confere usuário e senha e, se estiverem corretos, emite o token.
 - O login recebe a credencial e devolve o token. Esse endpoint não exige token.
 - Os endpoints de envio, listagem e download exigem o token na requisição. Sem token válido, a ação não acontece.
-- Persiste login, nome, e-mail, credencial e acesso no Postgres de usuários, inclusive a conta `Adm`. Só esta API escreve nessa base.
+- Persiste Guid, login, nome, e-mail, credencial e acesso no Postgres de usuários, inclusive a conta `Adm`. A senha fica no hash do PasswordHasher do .NET. Só esta API escreve nessa base.
 
 ### Regras
 
@@ -52,7 +52,7 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 ### Em aberto
 
 - Um acesso pode ser encerrado (sair) e revogado, ou basta autenticar de novo na próxima vez?
-- Qual é o formato do token, e como a senha fica guardada?
+- Qual é o formato do token?
 
 ## Video API
 
@@ -160,7 +160,7 @@ Dois Postgres, um por contexto. O storage externo não é banco: lá ficam o ví
 
 Dono: Auth API. A Video API não lê nem escreve aqui. Ela recebe só a identidade autenticada.
 
-Guarda o login, o nome, o e-mail, a credencial e o acesso, inclusive a conta `Adm`.
+Guarda o Guid, o login, o nome, o e-mail, o hash da senha e o acesso, inclusive a conta `Adm`.
 
 ### Postgres de vídeos
 
@@ -226,7 +226,7 @@ Antes de quebrar o vídeo, o processor marca o identificador no Redis. Outro pro
 
 ## Ambiente local
 
-Um Docker Compose sobe a infraestrutura. Os três serviços .NET apontam para ela.
+Um Docker Compose sobe a infraestrutura. Os três serviços .NET apontam para ela. O PostgreSQL de usuários entra junto com o cadastro da Auth. O banco de vídeos, a fila, o MinIO, o Redis e a monitoria entram quando esses contextos existirem. A decisão do primeiro banco está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
 
 - **PostgreSQL:** banco de usuários e banco de vídeos.
 - **Redis:** listagem de status e marca de vídeo em processamento.

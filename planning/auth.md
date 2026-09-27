@@ -21,6 +21,8 @@ O serviço nasce com uma conta administradora. A decisão está em `docs/adrs/AD
 
 - Login: `Adm`
 - Senha: `Adm`
+- Nome: `Administrador`
+- E-mail: `adm@adm.com`
 
 Essa conta cadastra os demais usuários. Não há autocadastro. Não há outro papel neste corte: ou é a conta `Adm`, ou é um usuário criado por ela.
 
@@ -35,7 +37,7 @@ O administrador informa, para cada usuário:
 - nome
 - e-mail
 
-O login identifica a pessoa na credencial. O nome é o nome da pessoa. O e-mail segue com a identidade e será usado pela Video API quando um processamento falha.
+O login identifica a pessoa na credencial. O nome é o nome da pessoa. O e-mail segue com a identidade e será usado pela Video API quando um processamento falha. O identificador do registro é um Guid gerado na gravação. A decisão está em `docs/adrs/ADR-005-identificador-guid.md`.
 
 O cadastro faz o seguinte:
 
@@ -45,13 +47,15 @@ O cadastro faz o seguinte:
 - alterar nome, e-mail e senha
 - remover o usuário
 
+A criação não recebe o Guid. A resposta devolve o Guid gerado. Consultar, alterar e remover usam esse Guid.
+
 O login não muda depois de criado. A senha não volta na consulta, na lista nem na alteração. Login repetido ou e-mail repetido não grava outro usuário. Remover a conta `Adm` não acontece.
 
 A primeira entrega desses endpoints não exige token.
 
 ## Ordem
 
-1. Cadastro, sem token na requisição. A persistência fica atrás de uma interface e grava no PostgreSQL de usuários.
+1. Cadastro, sem token na requisição. A persistência fica atrás de uma interface e grava no PostgreSQL de usuários. O Docker Compose deste passo sobe só esse banco. A decisão está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
 2. Login, que confere usuário e senha e emite o token.
 3. Leitura do token, que recupera o usuário e o e-mail.
 4. Os endpoints de cadastro passam a exigir o token da conta `Adm`.
@@ -60,7 +64,7 @@ O formato do token continua em aberto, inclusive se ele é assinado ou criptogra
 
 ## Conceitos
 
-- **Usuário:** pessoa que usa o sistema. É a dona dos vídeos que enviar. Tem login, nome e e-mail. O e-mail é usado pela Video API quando um processamento falha.
+- **Usuário:** pessoa que usa o sistema. É a dona dos vídeos que enviar. Tem Guid, login, nome e e-mail. O Guid identifica o registro. O e-mail é usado pela Video API quando um processamento falha.
 - **Credencial:** login e senha usados para provar a identidade.
 - **Acesso:** permissão daquele usuário para entrar e usar o sistema. Neste corte, o usuário cadastrado tem acesso. A conta `Adm` também tem.
 - **Administrador:** a conta `Adm`. Só ela cadastra usuários.
@@ -81,9 +85,11 @@ Envio, listagem e download, na Video API, exigem esse token. Esta API não imple
 
 O PostgreSQL de usuários é desta API. A Video API não lê nem escreve nele. Ela recebe só a identidade autenticada.
 
-A base guarda o login, o nome, o e-mail, a credencial e o acesso, inclusive a conta `Adm`. Só a Auth API escreve nela.
+A base guarda o Guid, o login, o nome, o e-mail, a credencial e o acesso, inclusive a conta `Adm`. O Guid nasce na gravação. Só a Auth API escreve nela.
 
-O teste unitário não sobe PostgreSQL. A persistência fica atrás de uma interface, para a prova do cadastro, do login e da recusa não depender do banco. A forma de guardar a senha não foi escolhida. Nenhuma resposta devolve a senha.
+O Docker Compose do cadastro sobe o PostgreSQL de usuários. A Auth API grava nele. O teste unitário não sobe esse banco: a persistência fica atrás de uma interface, para a prova do cadastro, do login e da recusa não depender do container.
+
+A senha é guardada com o PasswordHasher do .NET (PBKDF2). A decisão está em `docs/adrs/ADR-004-senha-com-passwordhasher.md`. Nenhuma resposta devolve a senha nem o hash.
 
 ## Camadas
 
@@ -112,7 +118,7 @@ Não implementar:
 - Envio, listagem, download e status de vídeo.
 - Processamento dos frames e geração do ZIP.
 - E-mail de erro. Quem avisa é a Video API.
-- Fila, MinIO, Redis, monitoria, publicação da imagem e deploy.
+- Banco de vídeos, fila, MinIO, Redis, monitoria, publicação da imagem e deploy.
 
 ## Testes
 
