@@ -6,14 +6,13 @@ A Auth API cadastra os usuários, autentica e emite o token. O resto do sistema 
 
 ## O que já existe
 
-- Solution .NET 10 `Fase5-FiapX.slnx`.
-- Projeto `src/Auth/Api` (`Auth.Api`). O host sobe e ainda não tem cadastro nem login.
-- Testes em `tst/Auth/Tests`. `AuthHostTests` sobe o host e espera `404` em `GET /`.
+- Solution .NET 10 `Fase5-FiapX.slnx`, com Api, Application, Domain e Infra.
+- Projeto `src/Auth/Api` (`Auth.Api`). O cadastro cria, consulta, lista, altera e remove usuários sem token.
+- Testes em `tst/Auth/Tests`. Cobrem o cadastro, as recusas e o host. O host de teste não sobe PostgreSQL.
 - Imagem em `src/Auth/Api/Dockerfile`. O CI compila a tag local `fase5-auth:ci` e não publica.
 - Workflow `.github/workflows/ci.yml`: restore, build Release, testes OpenCover da Auth, falha abaixo de 80% de linhas, SonarCloud com quality gate e build da imagem.
 - O script `.github/scripts/check-auth-coverage.ps1` lê o OpenCover e mede os módulos da Auth (`Auth.Api` e o que começa com `Auth.`). O Sonar exclui `Program.cs` da cobertura. A trava de 80% do workflow não depende do Sonar.
-- Não há Docker Compose, PostgreSQL, fila, MinIO, Redis nem monitoria neste repositório.
-- Ainda não existem os projetos Application, Domain e Infra.
+- `compose.yaml` sobe o PostgreSQL de usuários. Não há fila, MinIO, Redis nem monitoria neste repositório.
 
 ## Conta administradora
 

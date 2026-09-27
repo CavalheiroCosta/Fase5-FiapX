@@ -1,13 +1,13 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Auth.Tests.Suporte;
 
 namespace Auth.Tests;
 
-public class AuthHostTests : IClassFixture<WebApplicationFactory<Program>>
+public class AuthHostTests : IClassFixture<AuthApiFactory>
 {
     private readonly HttpClient _client;
 
-    public AuthHostTests(WebApplicationFactory<Program> factory)
+    public AuthHostTests(AuthApiFactory factory)
     {
         _client = factory.CreateClient();
     }

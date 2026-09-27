@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Auth.Application.csproj" />
+    <ProjectReference Include="..\Infra\Auth.Infra.csproj" />
+  </ItemGroup>
+
 </Project>

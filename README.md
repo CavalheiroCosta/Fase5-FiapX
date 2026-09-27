@@ -8,15 +8,21 @@ O desenho do sistema está em [`planning/planning.md`](planning/planning.md). A 
 
 | Serviço | Estado | Guia |
 | --- | --- | --- |
-| Auth API | Host no ar. O próximo passo é o cadastro de usuários. | [`planning/auth.md`](planning/auth.md) |
+| Auth API | Cadastro sem token. Login e leitura do token ficam para o passo seguinte. | [`planning/auth.md`](planning/auth.md) |
 | Video API | Ainda não existe neste repositório. | [`planning/planning.md`](planning/planning.md) |
 | Video Processor API | Ainda não existe neste repositório. | [`planning/planning.md`](planning/planning.md) |
 
-A Auth usa as camadas Api, Application, Domain e Infra. Hoje só a Api existe, em `src/Auth/Api`. Cada projeto tem o próprio `README.md`.
+A Auth usa as camadas Api, Application, Domain e Infra, em `src/Auth`. Cada projeto tem o próprio `README.md`.
 
 ## Ambiente local
 
-O primeiro Docker Compose sobe o PostgreSQL de usuários, junto com o cadastro da Auth. Banco de vídeos, Redis, RabbitMQ, MinIO, Prometheus e Grafana entram depois. Ainda não há Compose neste repositório.
+O Compose na raiz sobe o PostgreSQL de usuários:
+
+```powershell
+docker compose up -d
+```
+
+Banco de vídeos, Redis, RabbitMQ, MinIO, Prometheus e Grafana entram depois. A Auth, em desenvolvimento, grava em `localhost:5432`, banco `fiapx_usuarios`.
 
 ## Testes
 
