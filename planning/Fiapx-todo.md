@@ -12,12 +12,12 @@ O primeiro corte prova a Auth. O pull request quebra se ela não compila ou se a
 
 ### Agora
 
-- [ ] Solution .NET 10, como na Fase 4, com o projeto da Auth API e o projeto de testes dela.
-- [ ] O workflow dispara em pull request para a `main`, em push na `main` e por `workflow_dispatch`.
-- [ ] Passos: checkout, setup do .NET 10, restore e build em Release.
-- [ ] Testes da Auth com cobertura no formato OpenCover.
-- [ ] O próprio workflow lê o relatório e falha se a cobertura de linhas da Auth for menor que 80%. Não depende do Sonar para barrar o pull request.
-- [ ] Esse job termina antes do merge.
+- [x] Solution .NET 10, como na Fase 4, com o projeto da Auth API e o projeto de testes dela.
+- [x] O workflow dispara em pull request para a `main`, em push na `main` e por `workflow_dispatch`.
+- [x] Passos: checkout, setup do .NET 10, restore e build em Release.
+- [x] Testes da Auth com cobertura no formato OpenCover.
+- [x] O próprio workflow lê o relatório e falha se a cobertura de linhas da Auth for menor que 80%. Não depende do Sonar para barrar o pull request.
+- [x] Esse job termina antes do merge.
 
 ### Em seguida, no mesmo workflow
 
