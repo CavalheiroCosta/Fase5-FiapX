@@ -7,4 +7,5 @@ public static class CodigosFalha
     public const string EmailRepetido = "email_repetido";
     public const string NaoEncontrado = "nao_encontrado";
     public const string AdministradorProtegido = "administrador_protegido";
+    public const string CredencialInvalida = "credencial_invalida";
 }

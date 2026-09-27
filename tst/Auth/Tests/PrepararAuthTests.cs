@@ -47,7 +47,8 @@ public class PrepararAuthTests
         var configuracao = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["Persistence:Provider"] = "Postgres",
-            ["ConnectionStrings:Usuarios"] = "Host=localhost;Database=fiapx_usuarios;Username=fiapx;Password=fiapx"
+            ["ConnectionStrings:Usuarios"] = "Host=localhost;Database=fiapx_usuarios;Username=fiapx;Password=fiapx",
+            ["Token:Chave"] = "0123456789abcdef0123456789abcdef"
         }).Build();
 
         var servicos = new ServiceCollection();
@@ -63,7 +64,8 @@ public class PrepararAuthTests
     {
         var configuracao = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Persistence:Provider"] = "Memory"
+            ["Persistence:Provider"] = "Memory",
+            ["Token:Chave"] = "0123456789abcdef0123456789abcdef"
         }).Build();
 
         var servicos = new ServiceCollection();

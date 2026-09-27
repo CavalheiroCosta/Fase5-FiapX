@@ -1,11 +1,12 @@
 using Auth.Application.Senhas;
+using Auth.Domain.Tokens;
 using Auth.Domain.Usuarios;
 
 namespace Auth.Infra.Persistence;
 
 public sealed class AdministradorSeed(IUsuarioRepository repositorio, ISenhaHasher hasher)
 {
-    public const string Login = "Adm";
+    public const string Login = ContaAdministradora.Login;
     public const string Senha = "Adm";
     public const string Nome = "Administrador";
     public const string Email = "adm@adm.com";
