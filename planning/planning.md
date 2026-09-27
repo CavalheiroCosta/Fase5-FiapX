@@ -222,7 +222,7 @@ Antes de quebrar o vídeo, o processor marca o identificador no Redis. Outro pro
 
 ## Ambiente local
 
-Um Docker Compose sobe a infraestrutura. Os três serviços .NET apontam para ela. O PostgreSQL de usuários entra junto com o cadastro da Auth. O banco de vídeos, a fila, o MinIO, o Redis e a monitoria entram quando esses contextos existirem. A decisão do primeiro banco está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
+Um Docker Compose sobe a infraestrutura. Os três serviços .NET apontam para ela. O PostgreSQL de usuários entra junto com o cadastro da Auth, e a Auth API sobe nesse Compose. O banco de vídeos, a fila, o MinIO, o Redis e a monitoria entram quando esses contextos existirem. A decisão do primeiro banco está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
 
 - **PostgreSQL:** banco de usuários e banco de vídeos.
 - **Redis:** listagem de status e marca de vídeo em processamento.
