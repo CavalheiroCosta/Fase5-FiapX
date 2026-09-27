@@ -1,0 +1,45 @@
+---
+description: Pull request com título e corpo fáceis de ler
+alwaysApply: true
+---
+
+# Pull requests
+
+Abra o PR da branch de trabalho para a `main`. Não abra PR a partir da `main`.
+
+O título usa o mesmo formato do commit: `Tag(projeto): O que foi feito`. Se o PR junta vários commits, o título resume o resultado e o corpo lista cada um.
+
+Preencha `.github/PULL_REQUEST_TEMPLATE.md`. Mantenha as seções nesta ordem:
+
+1. **Resumo** — até três frases do resultado, não a lista de arquivos.
+2. **Projetos** — marque só os projetos que este PR altera: `Arq`, `Auth`, `Video`, `Processor`, `Teste`, `Doc`.
+3. **O que foi feito** — um bloco por projeto marcado. Cada item é uma frase do que mudou.
+4. **Como validar** — checklist do que o revisor executa. Inclua o comando ou o caminho na tela.
+
+Omita seção vazia. Não descreva o que ficou de fora, a menos que o revisor precise saber para não esperar aquele comportamento neste PR.
+
+```text
+Feat(Auth): Emite o token no login
+
+## Resumo
+O login devolve o token. Envio, listagem e download recusam a requisição sem ele.
+
+## Projetos
+- [x] Auth
+- [x] Video
+- [ ] Processor
+- [ ] Arq
+- [ ] Teste
+- [ ] Doc
+
+## O que foi feito
+### Auth
+- Confere usuário e senha e emite o token.
+
+### Video
+- Exige o token em envio, listagem e download.
+
+## Como validar
+- [ ] Login com senha certa devolve o token
+- [ ] Envio sem token responde sem aceitar o vídeo
+```

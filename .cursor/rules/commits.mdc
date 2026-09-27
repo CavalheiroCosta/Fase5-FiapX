@@ -1,0 +1,34 @@
+---
+description: Padrão de commit em branch, nunca na main
+alwaysApply: true
+---
+
+# Commits
+
+Commite só em branch. Se o HEAD estiver na `main`, crie uma branch antes de commitar. A `main` recebe o código pelo merge.
+
+Mensagem no formato `Tag(projeto): O que foi feito`. Uma frase, no presente, sem ponto final.
+
+Tags: `Feat`, `Fix`, `Hotfix`, `Chore`.
+
+- `Feat` — comportamento novo.
+- `Fix` — correção durante o desenvolvimento.
+- `Hotfix` — correção de algo que já está na `main`.
+- `Chore` — manutenção que não muda o comportamento do usuário.
+
+Projeto, um por commit:
+
+- `Arq` — arquitetura ou infra compartilhada (compose, fila, storage, monitoria). Mudança que atravessa serviços e não cabe em um só também usa `Arq`, ou vira commits separados.
+- `Video`, `Auth`, `Processor` — mudança dentro desse serviço, inclusive o teste dele.
+- `Teste` — esteira de teste compartilhada: cobertura, projeto de testes comum, configuração do runner. Teste de um serviço não usa `Teste`.
+- `Doc` — documentação (`AGENTS.md`, `planning/`). `Doc` é projeto, não tag.
+
+```text
+Feat(Auth): Emite o token no login
+Feat(Auth): Cobre a emissão do token
+Fix(Video): Recusa download sem status concluído
+Hotfix(Processor): Libera a marca no Redis quando o ZIP falha
+Chore(Arq): Sobe RabbitMQ e MinIO no Compose
+Chore(Doc): Registra o fluxo no planning
+Chore(Teste): Exige cobertura mínima de 80%
+```
