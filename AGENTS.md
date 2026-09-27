@@ -2,7 +2,7 @@
 
 Monorepo do processamento de vídeos da FIAP X. Três serviços .NET: Auth API, Video API e Video Processor API.
 
-Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O enunciado está em `planning/POSTECH - SOAT - Fase 5 - Hacka.pdf`.
+Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Auth API está em `planning/auth.md`. O enunciado está em `planning/POSTECH - SOAT - Fase 5 - Hacka.pdf`.
 
 ## Git
 
