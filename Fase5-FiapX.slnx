@@ -2,6 +2,9 @@
   <Folder Name="/src/" />
   <Folder Name="/src/Auth/">
     <Project Path="src/Auth/Api/Auth.Api.csproj" />
+    <Project Path="src/Auth/Application/Auth.Application.csproj" />
+    <Project Path="src/Auth/Domain/Auth.Domain.csproj" />
+    <Project Path="src/Auth/Infra/Auth.Infra.csproj" />
   </Folder>
   <Folder Name="/tst/" />
   <Folder Name="/tst/Auth/">

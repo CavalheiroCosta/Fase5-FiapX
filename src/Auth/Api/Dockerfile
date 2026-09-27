@@ -7,6 +7,9 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["src/Auth/Domain/Auth.Domain.csproj", "src/Auth/Domain/"]
+COPY ["src/Auth/Application/Auth.Application.csproj", "src/Auth/Application/"]
+COPY ["src/Auth/Infra/Auth.Infra.csproj", "src/Auth/Infra/"]
 COPY ["src/Auth/Api/Auth.Api.csproj", "src/Auth/Api/"]
 RUN dotnet restore "./src/Auth/Api/Auth.Api.csproj"
 COPY . .
