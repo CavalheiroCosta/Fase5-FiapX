@@ -37,11 +37,11 @@ A conta administradora é login `Adm`, senha `Adm`, nome `Administrador` e e-mai
 
 ### Agora
 
-- [ ] Camadas Api, Application, Domain e Infra, no modelo da Fase 4.
-- [ ] Cadastro sem token: criar, consultar, listar, alterar e remover.
-- [ ] Compose com o PostgreSQL de usuários. A Auth grava nele. Banco de vídeos, fila, MinIO, Redis e monitoria ficam fora. A decisão está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
-- [ ] Persistir Guid, login, nome, e-mail, hash da senha e acesso nesse banco, atrás de uma interface. O Guid nasce na gravação. A senha usa o PasswordHasher do .NET. A conta `Adm` nasce com o serviço.
-- [ ] Testes unitários do cadastro e das recusas, dentro da cobertura de 80%.
+- [x] Camadas Api, Application, Domain e Infra, no modelo da Fase 4.
+- [x] Cadastro sem token: criar, consultar, listar, alterar e remover.
+- [x] Compose com o PostgreSQL de usuários. A Auth grava nele. Banco de vídeos, fila, MinIO, Redis e monitoria ficam fora. A decisão está em `docs/adrs/ADR-003-postgres-usuarios-no-compose.md`.
+- [x] Persistir Guid, login, nome, e-mail, hash da senha e acesso nesse banco, atrás de uma interface. O Guid nasce na gravação. A senha usa o PasswordHasher do .NET. A conta `Adm` nasce com o serviço.
+- [x] Testes unitários do cadastro e das recusas, dentro da cobertura de 80%.
 
 ### Em seguida
 
