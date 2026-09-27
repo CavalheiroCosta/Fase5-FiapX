@@ -19,6 +19,8 @@ O primeiro corte prova a Auth. O pull request quebra se ela não compila ou se a
 - [x] O próprio workflow lê o relatório e falha se a cobertura de linhas da Auth for menor que 80%. Não depende do Sonar para barrar o pull request.
 - [x] Esse job termina antes do merge.
 
+O pull request 3 deixou a solution `Fase5-FiapX.slnx` com `src/Auth/Api` e `tst/Auth/Tests`. O workflow `.github/workflows/ci.yml` restaura, compila em Release, gera o OpenCover e `.github/scripts/check-auth-coverage.ps1` barra a cobertura de linhas da Auth abaixo de 80%. Esse job passou no pull request.
+
 ### Em seguida, no mesmo workflow
 
 - [ ] SonarCloud com quality gate, no modelo da Fase 4. Exige `SONAR_TOKEN` e as variáveis do projeto.
@@ -32,6 +34,8 @@ O primeiro corte prova a Auth. O pull request quebra se ela não compila ou se a
 ## Auth API
 
 Serviço .NET. Cuida do acesso do usuário e emite o token. Não processa vídeo.
+
+O projeto da API já existe e o host sobe no teste. Login, persistência e token ainda não.
 
 - [ ] Persistir usuário, e-mail, credencial e acesso no PostgreSQL de usuários.
 - [ ] Login com usuário e senha. Esse endpoint não exige token.
