@@ -8,7 +8,7 @@ O domínio das três APIs está em definição. Os serviços serão em .NET, num
 
 | Contexto | Estado |
 | --- | --- |
-| Auth API | Em andamento. O corte está em `planning/auth.md`. |
+| Auth API | Login emite JWT HMAC e o cadastro exige o token da conta `Adm`. O corte está em `planning/auth.md`. |
 | Video API | Em definição |
 | Video Processor API | Em definição |
 
@@ -25,7 +25,7 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 - **Acesso:** permissão daquele usuário para entrar e usar o sistema.
 - **Administrador:** a conta `Adm`. Só ela cadastra usuários. A decisão está em `docs/adrs/ADR-002-conta-administradora.md`.
 - **Identidade autenticada:** confirmação de quem está agindo depois de um acesso válido. Os outros contextos usam essa identidade para saber de quem é cada vídeo.
-- **Token:** o que o usuário envia em cada requisição depois do login. Carrega a identidade autenticada, inclusive o usuário e o e-mail.
+- **Token:** JWT assinado com HMAC que o usuário envia em cada requisição depois do login. Carrega o login e o e-mail e vale 30 minutos. A decisão está em `docs/adrs/ADR-006-token-jwt-hmac.md`.
 
 ### O que faz
 
@@ -40,7 +40,8 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 - Toda ação de vídeo parte de uma requisição com token válido.
 - Senha errada ou usuário inexistente não gera token.
 - O token carrega o usuário e o e-mail, para que a listagem, o download e o aviso de erro sejam do dono daquele vídeo.
-- Fora da Auth, autorização significa acesso válido ou não. Dentro da Auth, a conta `Adm` é quem cadastra. O cadastro começa sem token e depois passa a exigi-lo.
+- Fora da Auth, autorização significa acesso válido ou não. Dentro da Auth, a conta `Adm` é quem cadastra. O cadastro exige o token dessa conta.
+- O token é um JWT assinado com HMAC. Vale 30 minutos, carrega login e e-mail e não é gravado. Não há revogação: expirado, autentica de novo. A decisão está em `docs/adrs/ADR-006-token-jwt-hmac.md`.
 - O serviço da Auth usa as camadas Api, Application, Domain e Infra. A decisão está em `docs/adrs/ADR-001-camadas-auth.md`.
 
 ### Fora deste contexto
@@ -48,11 +49,6 @@ O restante do sistema só atende quem esta API reconhece. Ela responde quem é o
 - Envio, listagem, download e status de vídeo.
 - Processamento dos frames e geração do ZIP.
 - Enviar o e-mail de erro. Quem avisa é a Video API.
-
-### Em aberto
-
-- Um acesso pode ser encerrado (sair) e revogado, ou basta autenticar de novo na próxima vez?
-- Qual é o formato do token?
 
 ## Video API
 

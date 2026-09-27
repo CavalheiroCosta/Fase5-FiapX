@@ -17,9 +17,9 @@ A Auth usa as mesmas quatro camadas.
 | Camada | Projeto | Responsabilidade |
 | --- | --- | --- |
 | Api | `src/Auth/Api` | Host HTTP. Recebe a requisição e devolve a resposta. |
-| Application | `src/Auth/Application` | Casos de uso do cadastro e, nos passos seguintes, do login e da leitura do token. |
-| Domain | `src/Auth/Domain` | Usuário, credencial, acesso e a regra da conta administradora. |
-| Infra | `src/Auth/Infra` | PostgreSQL de usuários, implementando a interface que a Application usa. |
+| Application | `src/Auth/Application` | Casos de uso do cadastro e do login. |
+| Domain | `src/Auth/Domain` | Usuário, credencial, acesso, conta administradora e a regra do token. |
+| Infra | `src/Auth/Infra` | PostgreSQL de usuários e a assinatura HMAC do token, atrás de interface. |
 
 A imagem Docker continua publicando `Auth.Api`. Os outros três projetos entram por referência.
 
@@ -29,6 +29,6 @@ Video API e Video Processor API seguem esta divisão quando forem criadas.
 
 ## Consequências
 
-O teste do cadastro e do login usa a interface de persistência. Não sobe PostgreSQL.
+O teste do cadastro e do login usa a interface de persistência. Não sobe PostgreSQL. A assinatura do token está em `docs/adrs/ADR-006-token-jwt-hmac.md`.
 
 O workflow de cobertura já mede módulos `Auth.*`. Os projetos novos entram nessa medida sem mudar a trava de 80%.

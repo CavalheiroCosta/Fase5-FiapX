@@ -8,7 +8,7 @@ O desenho do sistema está em [`planning/planning.md`](planning/planning.md). A 
 
 | Serviço | Estado | Guia |
 | --- | --- | --- |
-| Auth API | Cadastro sem token. Login e leitura do token ficam para o passo seguinte. | [`planning/auth.md`](planning/auth.md) |
+| Auth API | Login emite JWT HMAC. O cadastro exige o token da conta `Adm`. | [`planning/auth.md`](planning/auth.md) |
 | Video API | Ainda não existe neste repositório. | [`planning/planning.md`](planning/planning.md) |
 | Video Processor API | Ainda não existe neste repositório. | [`planning/planning.md`](planning/planning.md) |
 

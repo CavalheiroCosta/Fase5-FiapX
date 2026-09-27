@@ -32,7 +32,7 @@ A ordem do corte:
 
 Fora desta API, autorização continua sendo acesso válido ou não. O papel de administrador vale só para o cadastro.
 
-Encerrar ou revogar um acesso continua em aberto. Enquanto isso, basta autenticar de novo.
+Encerrar ou revogar um acesso não entra neste corte. Expirado o token, basta autenticar de novo. O formato do token está em `docs/adrs/ADR-006-token-jwt-hmac.md`. A conta `Adm` é o login `Adm` carregado nesse token.
 
 ## Consequências
 

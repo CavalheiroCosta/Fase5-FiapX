@@ -45,14 +45,14 @@ A conta administradora é login `Adm`, senha `Adm`, nome `Administrador` e e-mai
 
 ### Em seguida
 
-- [ ] Login com usuário e senha. Esse endpoint não exige token.
-- [ ] Senha errada ou usuário inexistente não emite token.
-- [ ] Token válido carrega o usuário e o e-mail.
-- [ ] Leitura do token, recuperando o usuário e o e-mail.
-- [ ] Cadastro passa a exigir o token da conta `Adm`.
-- [ ] Testes unitários do login, da recusa e da leitura do token, dentro da cobertura de 80%.
+- [x] Login com usuário e senha. Esse endpoint não exige token.
+- [x] Senha errada ou usuário inexistente não emite token.
+- [x] Token válido carrega o usuário e o e-mail.
+- [x] Leitura do token, recuperando o usuário e o e-mail.
+- [x] Cadastro passa a exigir o token da conta `Adm`.
+- [x] Testes unitários do login, da recusa e da leitura do token, dentro da cobertura de 80%.
 
-### Ainda sem decisão
+### Decidido
 
-- O formato do token entra numa ADR antes da emissão. O cadastro não espera essa escolha.
-- O acesso pode ser encerrado ou revogado, ou basta autenticar de novo? Não implementar revogação enquanto isso estiver aberto.
+- O token é um JWT assinado com HMAC, válido por 30 minutos, com login e e-mail. A decisão está em `docs/adrs/ADR-006-token-jwt-hmac.md`.
+- Não há revogação. Expirado, o usuário autentica de novo.
