@@ -103,6 +103,42 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "fiapx"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - fiapx_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "fiapx", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  processor:
+    build:
+      context: .
+      dockerfile: src/Processor/Api/Dockerfile
+    ports:
+      - "5300:8080"
+    environment:
+      Storage__ServiceUrl: http://minio:9000
+      Storage__Bucket: videos
+      Storage__AccessKey: fiapx
+      Storage__SecretKey: fiapxfiapx
+      Queue__Uri: amqp://fiapx:fiapx@rabbitmq:5672/
+      Queue__Processamento: processamento
+      Queue__Status: status
+      Redis__Conexao: redis:6379,password=fiapx
+    depends_on:
+      minio:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   postgres-exporter-usuarios:
     image: prometheuscommunity/postgres-exporter:v0.20.1
     environment:
@@ -121,6 +157,15 @@ services:
       DATA_SOURCE_PASS: fiapx # NOSONAR credencial só do ambiente local
     depends_on:
       postgres-videos:
+        condition: service_healthy
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.67.0
+    environment:
+      REDIS_ADDR: redis://redis:6379
+      REDIS_PASSWORD: fiapx # NOSONAR credencial só do ambiente local
+    depends_on:
+      redis:
         condition: service_healthy
 
   prometheus:
@@ -142,6 +187,10 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      processor:
+        condition: service_started
+      redis-exporter:
+        condition: service_started
 
   grafana:
     image: grafana/grafana:13.0.9
@@ -163,3 +212,4 @@ volumes:
   fiapx_usuarios:
   fiapx_videos:
   fiapx_minio:
+  fiapx_redis:

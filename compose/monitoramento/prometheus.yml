@@ -10,6 +10,10 @@ scrape_configs:
     static_configs:
       - targets: ["video:8080"]
 
+  - job_name: processor
+    static_configs:
+      - targets: ["processor:8080"]
+
   - job_name: postgres-usuarios
     static_configs:
       - targets: ["postgres-exporter-usuarios:9187"]
@@ -32,3 +36,7 @@ scrape_configs:
     metrics_path: /metrics/per-object
     static_configs:
       - targets: ["rabbitmq:15692"]
+
+  - job_name: redis
+    static_configs:
+      - targets: ["redis-exporter:9121"]

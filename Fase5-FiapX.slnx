@@ -12,11 +12,20 @@
     <Project Path="src/Video/Domain/Video.Domain.csproj" />
     <Project Path="src/Video/Infra/Video.Infra.csproj" />
   </Folder>
+  <Folder Name="/src/Processor/">
+    <Project Path="src/Processor/Api/Processor.Api.csproj" />
+    <Project Path="src/Processor/Application/Processor.Application.csproj" />
+    <Project Path="src/Processor/Domain/Processor.Domain.csproj" />
+    <Project Path="src/Processor/Infra/Processor.Infra.csproj" />
+  </Folder>
   <Folder Name="/tst/" />
   <Folder Name="/tst/Auth/">
     <Project Path="tst/Auth/Tests/Auth.Tests.csproj" />
   </Folder>
   <Folder Name="/tst/Video/">
     <Project Path="tst/Video/Tests/Video.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tst/Processor/">
+    <Project Path="tst/Processor/Tests/Processor.Tests.csproj" />
   </Folder>
 </Solution>

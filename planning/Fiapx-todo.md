@@ -104,17 +104,17 @@ No local, o ZIP aparece no console do MinIO e a mensagem aparece no painel do Ra
 
 O serviço nasce em `src/Processor`, nas quatro camadas. ffmpeg, storage, fila e Redis ficam atrás de interface.
 
-- [ ] Consome a mensagem já publicada: `id` e `caminho`.
-- [ ] Marca o identificador no Redis antes de trabalhar. Se a marca já existir, não processa de novo. A marca sai no sucesso e no erro.
-- [ ] A fila durável se chama `status`. A mensagem é JSON com `id` e `momento` (`comecou`, `sucesso` ou `erro`). No `sucesso`, também o `caminho` do ZIP.
-- [ ] Publica `comecou` antes do término. Em seguida publica `sucesso` ou `erro`.
-- [ ] Lê o vídeo no MinIO, extrai os frames e grava o ZIP. A chave do objeto é `{id}/{id}.zip`. O caminho publicado é `videos/{id}/{id}.zip`. Sucesso só com o ZIP já salvo.
-- [ ] Erro de processamento não volta para a fila `processamento`. Não há nova tentativa neste corte.
-- [ ] O Compose sobe o processor e o Redis, com um consumidor.
-- [ ] No console do MinIO, o ZIP aparece. No painel do RabbitMQ, a mensagem aparece na fila `status`.
-- [ ] Testes unitários, dentro da cobertura de 80%. O CI passa a barrar o pull request pela cobertura de linhas do processor.
-- [ ] A métrica do processor entra no Grafana da Feature 2.
-- [ ] O contrato da fila `status` vira ADR.
+- [x] Consome a mensagem já publicada: `id` e `caminho`.
+- [x] Marca o identificador no Redis antes de trabalhar. Se a marca já existir, não processa de novo. A marca sai no sucesso e no erro.
+- [x] A fila durável se chama `status`. A mensagem é JSON com `id` e `momento` (`comecou`, `sucesso` ou `erro`). No `sucesso`, também o `caminho` do ZIP.
+- [x] Publica `comecou` antes do término. Em seguida publica `sucesso` ou `erro`.
+- [x] Lê o vídeo no MinIO, extrai os frames e grava o ZIP. A chave do objeto é `{id}/{id}.zip`. O caminho publicado é `videos/{id}/{id}.zip`. Sucesso só com o ZIP já salvo.
+- [x] Erro de processamento não volta para a fila `processamento`. Não há nova tentativa neste corte.
+- [x] O Compose sobe o processor e o Redis, com um consumidor.
+- [x] No console do MinIO, o ZIP aparece. No painel do RabbitMQ, a mensagem aparece na fila `status`.
+- [x] Testes unitários, dentro da cobertura de 80%. O CI passa a barrar o pull request pela cobertura de linhas do processor.
+- [x] A métrica do processor entra no Grafana da Feature 2.
+- [x] O contrato da fila `status` vira ADR.
 
 Fora desta feature: aplicar o status no Postgres, listagem, download, e-mail e mais de um processor no Compose.
 
