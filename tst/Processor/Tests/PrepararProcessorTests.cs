@@ -48,6 +48,7 @@ public class PrepararProcessorTests
     public async Task Registra_storage_fila_redis_e_ffmpeg_sem_abrir_conexao()
     {
         var servicos = new ServiceCollection();
+        servicos.AddApplication();
         servicos.AddInfrastructure(Configuracao(Real()));
         await using var provedor = servicos.BuildServiceProvider();
 
@@ -57,6 +58,35 @@ public class PrepararProcessorTests
         Assert.IsType<QuebraVideoFfmpeg>(provedor.GetRequiredService<IQuebraVideo>());
         Assert.Equal(2, servicos.Count(descritor => descritor.ServiceType == typeof(IHostedService)));
         Assert.IsType<ClienteObjetoS3>(provedor.GetRequiredService<IClienteObjeto>());
+
+        var fabrica = provedor.GetRequiredService<Func<ISessaoConsumo>>();
+        var sessao = fabrica();
+
+        Assert.IsType<SessaoConsumo>(sessao);
+    }
+
+    [Fact]
+    public async Task Fila_cancelada_nao_abre_conexao()
+    {
+        var publicador = new PublicadorFilaRabbit("amqp://127.0.0.1:1");
+        var token = new CancellationToken(canceled: true);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => publicador.DeclararAsync("status", token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            publicador.PublicarAsync("status", new byte[] { 1 }, token));
+
+        await using var canal = new CanalConsumoRabbit(new OpcoesFila("amqp://127.0.0.1:1", "processamento", "status"));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => canal.PrepararAsync(token));
+    }
+
+    [Fact]
+    public void Consumidor_nasce_com_a_espera_padrao()
+    {
+        var servico = new ConsumidorHostedService(
+            () => new SessaoScript(_ => Task.CompletedTask),
+            NullLogger<ConsumidorHostedService>.Instance);
+
+        Assert.IsType<ConsumidorHostedService>(servico);
     }
 
     [Fact]

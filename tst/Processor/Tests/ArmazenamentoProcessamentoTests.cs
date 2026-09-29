@@ -46,6 +46,21 @@ public class ArmazenamentoProcessamentoTests
         Assert.Throws<ArgumentException>(() => new ClienteObjetoS3(" ", "fiapx", "fiapxfiapx"));
     }
 
+    [Fact]
+    public async Task Cliente_cancelado_nao_abre_o_storage()
+    {
+        using var cliente = new ClienteObjetoS3("http://127.0.0.1:9", "fiapx", "fiapxfiapx");
+        using var conteudo = new MemoryStream([1]);
+
+        var token = new CancellationToken(canceled: true);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            cliente.GravarAsync("videos", "a.zip", conteudo, token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            cliente.GarantirBucketAsync("videos", token));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            cliente.BaixarAsync("videos", "a.zip", token));
+    }
+
     private sealed class ClienteFalso : IClienteObjeto
     {
         public List<(string Bucket, string Chave)> Gravados { get; } = [];
