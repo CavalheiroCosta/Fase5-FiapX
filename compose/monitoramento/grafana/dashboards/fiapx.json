@@ -229,6 +229,20 @@
           "legendFormat": "{{origem}}"
         }
       ]
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "Video — download",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 36 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (resultado) (fiapx_video_download_total{job=\"video\"})",
+          "legendFormat": "{{resultado}}"
+        }
+      ]
     }
   ]
 }
