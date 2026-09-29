@@ -68,10 +68,12 @@ Esta API é a dona do registro do vídeo: de quem é, em que ponto está e onde 
 
 ### Status
 
-- **Aguardando processamento:** o vídeo já foi aceito e está no storage. O processor ainda não começou.
-- **Em processamento:** o processor avisou que começou.
-- **Concluído:** o processor terminou com sucesso e o ZIP está no storage. O download fica disponível.
-- **Erro:** o processor terminou com falha. O download do ZIP não fica disponível. A Video API avisa o dono por e-mail.
+O valor gravado no Postgres e devolvido pela API não leva acento.
+
+- **Aguardando processamento** (`aguardando_processamento`): o vídeo já foi aceito e está no storage. O processor ainda não começou.
+- **Em processamento** (`em_processamento`): o processor avisou que começou.
+- **Concluído** (`concluido`): o processor terminou com sucesso e o ZIP está no storage. O download fica disponível.
+- **Erro** (`erro`): o processor terminou com falha. O download do ZIP não fica disponível. A Video API avisa o dono por e-mail. Esse aviso é a Feature 7. O e-mail sai depois que o status já está gravado.
 
 ### O que faz
 
@@ -102,7 +104,7 @@ Esta API é a dona do registro do vídeo: de quem é, em que ponto está e onde 
 
 ### Em aberto
 
-- O usuário pode baixar o vídeo original, ou só o ZIP?
+- A Feature 6 entrega o ZIP. Baixar o vídeo original continua em aberto.
 
 ## Video Processor API
 
@@ -133,7 +135,8 @@ Não atende o usuário. Não decide quem pode ver o vídeo. Não lista status. T
 - Só processa vídeo que a Video API encaminhou.
 - O início do trabalho é informado antes do término, para o status sair de aguardando e ir para em processamento.
 - Sucesso só vale com o ZIP já salvo no storage.
-- Erro é um resultado explícito. A Video API passa o vídeo para status de erro e envia o e-mail ao dono.
+- Erro é um resultado explícito. A Video API passa o vídeo para status de erro. O e-mail ao dono é a Feature 7, depois que esse status já está gravado.
+- Erro de processamento não volta para a fila. O vídeo permanece `erro`. Não há nova tentativa. A ordem dos cortes está em `planning/Fiapx-todo.md`.
 - O processor não altera o dono do vídeo, não escreve no Postgres e não atende download.
 - Vários processors podem consumir a mesma fila de processamento. Cada mensagem é de um vídeo. O Redis garante que o mesmo vídeo não seja processado por dois ao mesmo tempo. O resultado volta na fila de status com o identificador daquele vídeo.
 - A marca no Redis sai quando o processamento termina, em sucesso ou em erro.
@@ -143,10 +146,6 @@ Não atende o usuário. Não decide quem pode ver o vídeo. Não lista status. T
 - Login, listagem e download.
 - Decidir se o usuário pode submeter aquele vídeo.
 - Enviar e-mail. O processor só publica o erro na fila de status. A Video API avisa o usuário.
-
-### Em aberto
-
-- Um erro de processamento pode ser tentado de novo, ou o vídeo permanece em erro?
 
 ## Banco de dados
 
@@ -188,7 +187,7 @@ Mais de um processor pode consumir esta fila. Cada um pega um vídeo diferente. 
 
 - Publica: Video Processor API.
 - Consome: Video API, que aplica a mudança no Postgres de vídeos.
-- Conteúdo: identificador do vídeo e o momento (começou, sucesso ou erro). No sucesso, também a referência do ZIP.
+- Conteúdo: identificador do vídeo e o momento (`comecou`, `sucesso` ou `erro`). No sucesso, também a referência do ZIP. A fila durável se chama `status`. O contrato entra na Feature 3.
 
 O processor não atualiza o status direto no banco. A Video API continua dona do registro. No erro, ela grava o status e envia o e-mail ao dono.
 

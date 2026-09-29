@@ -16,7 +16,7 @@ A Auth e a Video usam as camadas Api, Application, Domain e Infra, em `src/Auth`
 
 ## Ambiente local
 
-O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o MinIO e o RabbitMQ:
+O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o MinIO, o RabbitMQ, o Prometheus e o Grafana:
 
 ```powershell
 docker compose up -d
@@ -28,10 +28,12 @@ docker compose up -d
 | Video API | `http://localhost:5299` — banco `fiapx_videos` em `localhost:5433` |
 | MinIO | API `http://localhost:9000`, console `http://localhost:9001` (usuário `fiapx`, senha `fiapxfiapx`) |
 | RabbitMQ | AMQP `localhost:5672`, painel `http://localhost:15672` (usuário `fiapx`, senha `fiapx`) |
+| Prometheus | `http://localhost:9090/targets` |
+| Grafana | `http://localhost:3000` (usuário `fiapx`, senha `fiapx`), dashboard `FIAP X` |
 
 Fora do Compose, em desenvolvimento, a Auth grava em `localhost:5432` e a Video API aponta para essas mesmas portas do host.
 
-O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. Redis, Prometheus e Grafana entram depois.
+O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. A Auth e a Video expõem `GET /metrics` sem token. Como ver cada painel está em [`docs/monitoramento.md`](docs/monitoramento.md). O Redis entra na Feature 3. Listagem, download do ZIP e e-mail de erro são as Features 5, 6 e 7. A ordem está em [`planning/Fiapx-todo.md`](planning/Fiapx-todo.md).
 
 ## Testes
 
