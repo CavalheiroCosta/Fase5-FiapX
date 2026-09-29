@@ -10,7 +10,7 @@ public sealed class PrepararVideoHostedService(IServiceScopeFactory escopos) : I
         using var escopo = escopos.CreateScope();
         var db = escopo.ServiceProvider.GetService<VideoDbContext>();
         if (db is not null)
-            db.Database.EnsureCreated();
+            await db.Database.EnsureCreatedAsync(cancellationToken);
 
         foreach (var preparo in escopo.ServiceProvider.GetServices<IPreparacaoExterna>())
             await preparo.PrepararAsync(cancellationToken);

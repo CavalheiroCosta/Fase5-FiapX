@@ -29,6 +29,7 @@ public sealed class ClienteObjetoS3 : IClienteObjeto, IDisposable
         }
         catch (AmazonS3Exception ex) when (ex.ErrorCode is "BucketAlreadyOwnedByYou" or "BucketAlreadyExists")
         {
+            return;
         }
     }
 

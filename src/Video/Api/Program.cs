@@ -1,5 +1,5 @@
+using Video.Api;
 using Video.Application;
-using Video.Application.Envio;
 using Video.Infra;
 using Video.Infra.Persistence;
 
@@ -19,15 +19,6 @@ var app = builder.Build();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program;
-
-public static class LimiteUpload
-{
-    public static long Ler(IConfiguration configuration)
-    {
-        var valor = configuration.GetValue<long?>("Upload:LimiteBytes");
-        return valor is null or <= 0 ? EnviarVideoUseCase.LimitePadraoBytes : valor.Value;
-    }
-}

@@ -14,11 +14,11 @@ COPY ["src/Video/Api/Video.Api.csproj", "src/Video/Api/"]
 RUN dotnet restore "./src/Video/Api/Video.Api.csproj"
 COPY . .
 WORKDIR "/src/src/Video/Api"
-RUN dotnet build "./Video.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Video.Api.csproj" -c "$BUILD_CONFIGURATION" -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Video.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Video.Api.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

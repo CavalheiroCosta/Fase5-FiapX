@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Video.Api;
 
 namespace Video.Tests;
 

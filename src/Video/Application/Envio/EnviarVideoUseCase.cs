@@ -80,6 +80,7 @@ public sealed class EnviarVideoUseCase(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            _ = ex;
         }
     }
 }
