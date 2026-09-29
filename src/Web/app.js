@@ -365,7 +365,7 @@ async function baixarZip(id) {
 
 function loginDoToken(token) {
   try {
-    const parte = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    const parte = token.split('.')[1].replaceAll('-', '+').replaceAll('_', '/')
     const preenchido = parte.padEnd(parte.length + ((4 - (parte.length % 4)) % 4), '=')
     const json = JSON.parse(atob(preenchido))
     return typeof json.login === 'string' && json.login ? json.login : null
