@@ -20,5 +20,6 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-014](./ADR-014-listagem-no-redis.md) | A listagem sai do Redis |
 | [ADR-015](./ADR-015-download-do-zip.md) | O download entrega o ZIP do storage |
 | [ADR-016](./ADR-016-email-de-erro.md) | O e-mail de erro sai depois do status |
+| [ADR-017](./ADR-017-dois-processors-no-compose.md) | Dois processors na mesma fila |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.

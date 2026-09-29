@@ -177,7 +177,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "fiapx_processor_em_andamento{job=\"processor\"}"
+          "expr": "sum(fiapx_processor_em_andamento{job=\"processor\"})"
         }
       ],
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
