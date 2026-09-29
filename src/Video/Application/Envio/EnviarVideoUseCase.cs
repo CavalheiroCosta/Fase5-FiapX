@@ -10,6 +10,7 @@ public sealed class EnviarVideoUseCase(
     IArmazenamentoVideo armazenamento,
     IVideoRepository repositorio,
     IFilaProcessamento fila,
+    IListaVideos lista,
     long limiteBytes)
 {
     public const long LimitePadraoBytes = 200L * 1024 * 1024;
@@ -58,6 +59,8 @@ public sealed class EnviarVideoUseCase(
             return Resultado<VideoResposta>.Erro(CodigosFalha.Persistencia, "Não foi possível registrar o vídeo.");
         }
 
+        await AtualizarListaAsync(criado.Valor, cancellationToken);
+
         try
         {
             await fila.PublicarAsync(id, caminho, cancellationToken);
@@ -70,6 +73,18 @@ public sealed class EnviarVideoUseCase(
         }
 
         return Resultado<VideoResposta>.Ok(new VideoResposta(id, criado.Valor.Status, caminho));
+    }
+
+    private async Task AtualizarListaAsync(global::Video.Domain.Videos.Video video, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await lista.AtualizarAsync(video.Login, ItemLista.De(video), cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _ = ex;
+        }
     }
 
     private async Task RemoverSilenciosoAsync(string caminho, CancellationToken cancellationToken)

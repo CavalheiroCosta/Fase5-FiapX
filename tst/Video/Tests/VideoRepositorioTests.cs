@@ -56,6 +56,8 @@ public class VideoRepositorioTests : IDisposable
         await memoria.AdicionarAsync(criado.Valor!, CancellationToken.None);
 
         Assert.Equal(criado.Valor!.Id, Assert.Single(memoria.Listar()).Id);
+        Assert.Equal(criado.Valor.Id, Assert.Single(await memoria.ListarPorLoginAsync("ana", CancellationToken.None)).Id);
+        Assert.Empty(await memoria.ListarPorLoginAsync("bia", CancellationToken.None));
         Assert.Equal(criado.Valor.Id, (await memoria.ObterAsync(criado.Valor.Id, CancellationToken.None))!.Id);
         await memoria.AtualizarAsync(criado.Valor, CancellationToken.None);
         Assert.Null(await memoria.ObterAsync(Guid.NewGuid(), CancellationToken.None));
@@ -75,6 +77,8 @@ public class VideoRepositorioTests : IDisposable
         var lido = await _db.Videos.AsNoTracking().SingleAsync();
         Assert.Equal(StatusVideo.Concluido, lido.Status);
         Assert.Equal($"videos/{id:D}/{id:D}.zip", lido.CaminhoZip);
+        Assert.Equal(id, Assert.Single(await _repositorio.ListarPorLoginAsync("ana", CancellationToken.None)).Id);
+        Assert.Empty(await _repositorio.ListarPorLoginAsync("bia", CancellationToken.None));
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using Video.Domain.Tokens;
 using Video.Domain.Videos;
 using Video.Infra.Filas;
 using Video.Infra.Persistence;
+using Video.Infra.Redis;
 using Video.Infra.Storage;
 using Video.Infra.Tokens;
 
@@ -33,6 +34,8 @@ public static class DependencyInjection
             services.AddSingleton<IArmazenamentoVideo>(provedor => provedor.GetRequiredService<ArmazenamentoMemoria>());
             services.AddSingleton<FilaProcessamentoMemoria>();
             services.AddSingleton<IFilaProcessamento>(provedor => provedor.GetRequiredService<FilaProcessamentoMemoria>());
+            services.AddSingleton<ListaVideosMemoria>();
+            services.AddSingleton<IListaVideos>(provedor => provedor.GetRequiredService<ListaVideosMemoria>());
             return services;
         }
 
@@ -78,6 +81,11 @@ public static class DependencyInjection
             return () => new SessaoStatus(new CanalStatusRabbit(opcoes), escopos);
         });
         services.AddHostedService<ConsumidorStatusHostedService>();
+
+        var redis = configuration["Redis:Conexao"]
+            ?? throw new InvalidOperationException("Redis:Conexao não está configurada.");
+        services.AddSingleton(_ => new ComandoListaRedis(redis));
+        services.AddSingleton<IListaVideos>(provedor => new ListaVideos(provedor.GetRequiredService<ComandoListaRedis>()));
         return services;
     }
 }

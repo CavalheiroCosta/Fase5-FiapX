@@ -1,4 +1,5 @@
 using Video.Application.Envio;
+using Video.Application.Listagem;
 using Video.Domain.Videos;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,8 +7,18 @@ namespace Video.Api.Controllers;
 
 [ApiController]
 [Route("videos")]
-public sealed class VideosController(EnviarVideoUseCase enviar) : ControllerBase
+public sealed class VideosController(EnviarVideoUseCase enviar, ListarVideosUseCase listar) : ControllerBase
 {
+    [HttpGet]
+    public async Task<IActionResult> Listar(CancellationToken cancellationToken)
+    {
+        var resultado = await listar.ExecutarAsync(Bearer(), cancellationToken);
+        if (!resultado.Sucesso)
+            return ParaErro(resultado.Falha!);
+
+        return Ok(resultado.Valor);
+    }
+
     [HttpPost]
     [RequestSizeLimit(EnviarVideoUseCase.LimitePadraoBytes)]
     [RequestFormLimits(MultipartBodyLengthLimit = EnviarVideoUseCase.LimitePadraoBytes)]
