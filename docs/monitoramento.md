@@ -1,6 +1,6 @@
 # Como verificar o monitoramento
 
-Prometheus coleta o que já existe. O Grafana mostra isso num painel só. A listagem, o download e o e-mail ainda não entram aqui. A feature seguinte acrescenta painel no mesmo dashboard, em `compose/monitoramento/grafana/dashboards/fiapx.json`.
+Prometheus coleta o que já existe. O Grafana mostra isso num painel só. O download e o e-mail ainda não entram aqui. A feature seguinte acrescenta painel no mesmo dashboard, em `compose/monitoramento/grafana/dashboards/fiapx.json`.
 
 ```powershell
 docker compose up -d --build
@@ -13,7 +13,7 @@ docker compose up -d --build
 | Video API | `http://localhost:5299/metrics` | Texto de métrica, sem token |
 | Processor | `http://localhost:5300/metrics` | Texto de métrica, sem token |
 | Grafana | `http://localhost:3000` | Usuário `fiapx`, senha `fiapx`, dashboard `FIAP X` |
-| Redis | `localhost:6379` | Senha `fiapx`. A chave `marca:{id}` só existe enquanto o trabalho dura |
+| Redis | `localhost:6379` | Senha `fiapx`. A chave `marca:{id}` só existe enquanto o trabalho dura. A chave `lista:{login}` guarda a listagem |
 
 Os alvos em UP são `auth`, `video`, `processor`, `postgres-usuarios`, `postgres-videos`, `minio`, `minio-bucket`, `rabbitmq` e `redis`.
 
@@ -33,6 +33,7 @@ O intervalo do gráfico é de 1 minuto. O scrape do Prometheus é de 15 segundos
 - **Processor — em andamento.** Gauge `fiapx_processor_em_andamento`. Vale 1 enquanto o ffmpeg roda. O scrape pode não pegar um vídeo curto.
 - **Redis.** `no ar` quando o exporter alcança o Redis.
 - **Video — status aplicado.** Contador `fiapx_video_status_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
+- **Video — listagem.** Contador `fiapx_video_listagem_total` por `origem` (`redis` ou `postgres`). A primeira leitura de um login vem do Postgres e preenche o Redis. A seguinte vem do Redis. Permanece depois da chamada.
 
 ## Prova do processor
 
@@ -49,6 +50,13 @@ ffmpeg -f lavfi -i testsrc=duration=2:size=160x120:rate=1 -pix_fmt yuv420p amost
 5. Espere um scrape. No Grafana, o contador do processor sobe. A fila `status` esvazia. O painel `Video — status aplicado` mostra `comecou` e `sucesso`.
 6. Envie um arquivo que não é vídeo. A fila `status` recebe `erro` e esvazia, o ZIP não aparece e a mensagem não volta para `processamento`. A linha em `fiapx_videos` fica `erro`.
 7. No sucesso, a linha em `fiapx_videos` fica `concluido` e `caminho_zip` deixa de ser nulo.
+8. `GET http://localhost:5299/videos` com `Authorization: Bearer` devolve o vídeo desse login. No `concluido`, o item traz `caminhoZip`. Sem token, a resposta é 401. A primeira chamada marca `postgres` no painel `Video — listagem`. A seguinte marca `redis`.
+
+A lista fica no Redis depois dessa leitura:
+
+```powershell
+docker exec (docker compose ps -q redis) redis-cli -a fiapx --no-auth-warning KEYS "lista:*"
+```
 
 A marca some no sucesso e no erro. Para vê-la durante o trabalho, use um vídeo mais longo e, enquanto o ffmpeg roda:
 
@@ -58,4 +66,4 @@ docker exec (docker compose ps -q redis) redis-cli -a fiapx --no-auth-warning KE
 
 ## Fora deste painel
 
-Listagem, download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md` e `docs/adrs/ADR-013-aplica-status-no-registro.md`.
+Download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md`, `docs/adrs/ADR-013-aplica-status-no-registro.md` e `docs/adrs/ADR-014-listagem-no-redis.md`.
