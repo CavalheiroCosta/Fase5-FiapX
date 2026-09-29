@@ -12,11 +12,11 @@ O desenho do sistema está em [`planning/planning.md`](planning/planning.md). A 
 | Video API | `POST /videos` grava no MinIO, registra como aguardando e publica a referência. Consome a fila `status` e grava o status no Postgres. `GET /videos` lista o login a partir do Redis. `GET /videos/{id}/download` entrega o ZIP quando o status é `concluido`. No `erro`, envia e-mail ao dono. | [`planning/planning.md`](planning/planning.md) |
 | Video Processor API | Consome a fila `processamento`, marca no Redis, grava o ZIP e publica na fila `status`. | [`planning/planning.md`](planning/planning.md) |
 
-A Auth, a Video e o processor usam as camadas Api, Application, Domain e Infra, em `src/Auth`, `src/Video` e `src/Processor`. Cada projeto tem o próprio `README.md`.
+A Auth, a Video e o processor usam as camadas Api, Application, Domain e Infra, em `src/Auth`, `src/Video` e `src/Processor`. Cada projeto tem o próprio `README.md`. O front simples fica em [`src/Web`](src/Web/README.md) e sobe no mesmo Compose.
 
 ## Ambiente local
 
-O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, dois processors, o MinIO, o RabbitMQ, o Redis, o Mailpit, o Prometheus e o Grafana:
+O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, dois processors, o front, o MinIO, o RabbitMQ, o Redis, o Mailpit, o Prometheus e o Grafana:
 
 ```powershell
 docker compose up -d
@@ -24,6 +24,7 @@ docker compose up -d
 
 | Serviço | Onde olhar |
 | --- | --- |
+| Front | `http://localhost:5173` |
 | Auth API | `http://localhost:5298` — banco `fiapx_usuarios` |
 | Video API | `http://localhost:5299` — banco `fiapx_videos` em `localhost:5433` |
 | Processor | `http://localhost:5300` e `http://localhost:5301` |
