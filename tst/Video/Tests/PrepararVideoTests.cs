@@ -5,6 +5,7 @@ using Video.Domain.Videos;
 using Video.Infra;
 using Video.Infra.Filas;
 using Video.Infra.Persistence;
+using Video.Infra.Redis;
 using Video.Infra.Storage;
 
 namespace Video.Tests;
@@ -51,6 +52,7 @@ public class PrepararVideoTests
 
         Assert.IsType<ArmazenamentoMemoria>(provedor.GetRequiredService<IArmazenamentoVideo>());
         Assert.IsType<FilaProcessamentoMemoria>(provedor.GetRequiredService<IFilaProcessamento>());
+        Assert.IsType<ListaVideosMemoria>(provedor.GetRequiredService<IListaVideos>());
         Assert.Empty(provedor.GetServices<IPreparacaoExterna>());
         Assert.DoesNotContain(servicos, descritor => descritor.ImplementationType == typeof(ConsumidorStatusHostedService));
     }
@@ -69,7 +71,8 @@ public class PrepararVideoTests
             ["Storage:SecretKey"] = "fiapxfiapx",
             ["Storage:Bucket"] = "",
             ["Queue:Uri"] = "amqp://fiapx:fiapx@localhost:5672/",
-            ["Queue:Nome"] = " "
+            ["Queue:Nome"] = " ",
+            ["Redis:Conexao"] = "localhost:6379,password=fiapx"
         }));
         using var provedor = servicos.BuildServiceProvider();
 
@@ -77,11 +80,31 @@ public class PrepararVideoTests
         Assert.Contains("Npgsql", db.Database.ProviderName, StringComparison.OrdinalIgnoreCase);
         Assert.IsType<ArmazenamentoS3>(provedor.GetRequiredService<IArmazenamentoVideo>());
         Assert.IsType<FilaProcessamento>(provedor.GetRequiredService<IFilaProcessamento>());
+        Assert.IsType<ListaVideos>(provedor.GetRequiredService<IListaVideos>());
         Assert.Equal(2, provedor.GetServices<IPreparacaoExterna>().Count());
         Assert.Contains(servicos, descritor => descritor.ImplementationType == typeof(ConsumidorStatusHostedService));
         var sessao = provedor.GetRequiredService<Func<ISessaoStatus>>()();
         Assert.IsType<SessaoStatus>(sessao);
         (provedor.GetRequiredService<IClienteObjeto>() as IDisposable)?.Dispose();
+        provedor.GetRequiredService<ComandoListaRedis>().Dispose();
+    }
+
+    [Fact]
+    public void Redis_sem_conexao_nao_registra_a_lista()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            new ServiceCollection().AddInfrastructure(Configuracao(new Dictionary<string, string?>
+            {
+                ["Token:Chave"] = "0123456789abcdef0123456789abcdef",
+                ["Storage:ServiceUrl"] = "http://localhost:9000",
+                ["Storage:AccessKey"] = "fiapx",
+                ["Storage:SecretKey"] = "fiapxfiapx",
+                ["Queue:Uri"] = "amqp://fiapx:fiapx@localhost:5672/"
+            })));
+
+        Assert.Throws<ArgumentException>(() => new ComandoListaRedis(" "));
+        var comando = new ComandoListaRedis("localhost:6379,password=fiapx");
+        comando.Dispose();
     }
 
     [Fact]

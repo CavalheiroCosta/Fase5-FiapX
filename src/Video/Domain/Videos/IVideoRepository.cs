@@ -6,5 +6,7 @@ public interface IVideoRepository
 
     Task<Video?> ObterAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<Video>> ListarPorLoginAsync(string login, CancellationToken cancellationToken);
+
     Task AtualizarAsync(Video video, CancellationToken cancellationToken);
 }

@@ -31,6 +31,12 @@ public sealed class VideoRepositorioMemoria : IVideoRepository
             return Task.FromResult(_videos.FirstOrDefault(video => video.Id == id));
     }
 
+    public Task<IReadOnlyList<VideoEnviado>> ListarPorLoginAsync(string login, CancellationToken cancellationToken)
+    {
+        lock (_trava)
+            return Task.FromResult<IReadOnlyList<VideoEnviado>>(_videos.Where(video => video.Login == login).OrderBy(video => video.Id).ToArray());
+    }
+
     public Task AtualizarAsync(VideoEnviado video, CancellationToken cancellationToken) =>
         Task.CompletedTask;
 }

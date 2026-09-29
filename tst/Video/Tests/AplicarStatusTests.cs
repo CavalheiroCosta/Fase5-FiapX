@@ -31,7 +31,9 @@ public class AplicarStatusTests
         var video = global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
         repositorio.Guardar(video);
         var metricas = new MetricasVideo();
-        var caso = new AplicarStatusUseCase(repositorio, metricas);
+        var lista = new ListaFalsa();
+        lista.Guardar("ana", [new ItemLista(id, StatusVideo.AguardandoProcessamento, null)]);
+        var caso = new AplicarStatusUseCase(repositorio, lista, metricas);
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Comecou, null), CancellationToken.None));
         Assert.Equal(StatusVideo.EmProcessamento, video.Status);
@@ -45,6 +47,8 @@ public class AplicarStatusTests
         await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None);
         Assert.Equal(StatusVideo.Concluido, video.Status);
         Assert.Equal(2, repositorio.Atualizacoes);
+        Assert.Equal(StatusVideo.Concluido, lista.Itens("ana")!.Single().Status);
+        Assert.Equal(zip, lista.Itens("ana")!.Single().CaminhoZip);
     }
 
     [Fact]
@@ -57,7 +61,13 @@ public class AplicarStatusTests
         var videoSucesso = global::Video.Domain.Videos.Video.Registrar(sucesso, "ana", "ana@email.com", "videos/x/b.mp4").Valor!;
         repositorio.Guardar(videoErro);
         repositorio.Guardar(videoSucesso);
-        var caso = new AplicarStatusUseCase(repositorio, new MetricasVideo());
+        var lista = new ListaFalsa();
+        lista.Guardar("ana",
+        [
+            new ItemLista(erro, StatusVideo.AguardandoProcessamento, null),
+            new ItemLista(sucesso, StatusVideo.AguardandoProcessamento, null)
+        ]);
+        var caso = new AplicarStatusUseCase(repositorio, lista, new MetricasVideo());
 
         await caso.ExecutarAsync(Corpo(erro, MomentoStatus.Erro, null), CancellationToken.None);
         await caso.ExecutarAsync(Corpo(sucesso, MomentoStatus.Sucesso, $"videos/{sucesso:D}/{sucesso:D}.zip"), CancellationToken.None);
@@ -66,6 +76,10 @@ public class AplicarStatusTests
         Assert.Null(videoErro.CaminhoZip);
         Assert.Equal(StatusVideo.Concluido, videoSucesso.Status);
         Assert.NotNull(videoSucesso.CaminhoZip);
+        Assert.Equal(StatusVideo.Erro, lista.Itens("ana")!.Single(item => item.Id == erro).Status);
+        Assert.Null(lista.Itens("ana")!.Single(item => item.Id == erro).CaminhoZip);
+        Assert.Equal(StatusVideo.Concluido, lista.Itens("ana")!.Single(item => item.Id == sucesso).Status);
+        Assert.Equal($"videos/{sucesso:D}/{sucesso:D}.zip", lista.Itens("ana")!.Single(item => item.Id == sucesso).CaminhoZip);
     }
 
     [Fact]
@@ -75,7 +89,7 @@ public class AplicarStatusTests
         var repositorio = new RepositorioFalso();
         var video = global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
         repositorio.Guardar(video);
-        var caso = new AplicarStatusUseCase(repositorio, new MetricasVideo());
+        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), new MetricasVideo());
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync("{"u8.ToArray(), CancellationToken.None));
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(Guid.NewGuid(), MomentoStatus.Comecou, null), CancellationToken.None));
@@ -91,12 +105,31 @@ public class AplicarStatusTests
         var id = Guid.NewGuid();
         var repositorio = new RepositorioFalso { FalhaAoAtualizar = true };
         repositorio.Guardar(global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!);
-        var caso = new AplicarStatusUseCase(repositorio, new MetricasVideo());
+        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), new MetricasVideo());
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Comecou, null), CancellationToken.None));
 
         repositorio.FalhaAoAtualizar = false;
         repositorio.Cancelar = true;
+        Assert.Equal(Confirmacao.Recolocar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Falha_da_lista_confirma_e_cancelamento_recoloca()
+    {
+        var id = Guid.NewGuid();
+        var repositorio = new RepositorioFalso();
+        var video = global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+        repositorio.Guardar(video);
+        var lista = new ListaFalsa { Falhar = true };
+        lista.Guardar("ana", [new ItemLista(id, StatusVideo.AguardandoProcessamento, null)]);
+        var caso = new AplicarStatusUseCase(repositorio, lista, new MetricasVideo());
+
+        Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Comecou, null), CancellationToken.None));
+        Assert.Equal(StatusVideo.EmProcessamento, video.Status);
+
+        lista.Falhar = false;
+        lista.Cancelar = true;
         Assert.Equal(Confirmacao.Recolocar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None));
     }
 
@@ -108,6 +141,7 @@ public class AplicarStatusTests
         repositorio.Guardar(global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!);
         var servicos = new ServiceCollection();
         servicos.AddSingleton<IVideoRepository>(repositorio);
+        servicos.AddSingleton<IListaVideos>(new ListaFalsa());
         servicos.AddSingleton<MetricasVideo>();
         servicos.AddScoped<AplicarStatusUseCase>();
         await using var provedor = servicos.BuildServiceProvider();
@@ -132,6 +166,7 @@ public class AplicarStatusTests
         repositorio.Guardar(global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!);
         var servicos = new ServiceCollection();
         servicos.AddSingleton<IVideoRepository>(repositorio);
+        servicos.AddSingleton<IListaVideos>(new ListaFalsa());
         servicos.AddSingleton<MetricasVideo>();
         servicos.AddScoped<AplicarStatusUseCase>();
         await using var provedor = servicos.BuildServiceProvider();
@@ -150,6 +185,7 @@ public class AplicarStatusTests
     {
         var servicos = new ServiceCollection();
         servicos.AddSingleton<MetricasVideo>();
+        servicos.AddSingleton<IListaVideos>(new ListaFalsa());
         servicos.AddScoped<AplicarStatusUseCase>();
         servicos.AddSingleton<IVideoRepository>(new RepositorioFalso());
         await using var provedor = servicos.BuildServiceProvider();
@@ -281,12 +317,51 @@ public class AplicarStatusTests
             return Task.FromResult(_videos.GetValueOrDefault(id));
         }
 
+        public Task<IReadOnlyList<global::Video.Domain.Videos.Video>> ListarPorLoginAsync(string login, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<global::Video.Domain.Videos.Video>>(_videos.Values.Where(video => video.Login == login).ToArray());
+
         public Task AtualizarAsync(global::Video.Domain.Videos.Video video, CancellationToken cancellationToken)
         {
             if (FalhaAoAtualizar)
                 throw new IOException("banco");
 
             Atualizacoes++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ListaFalsa : IListaVideos
+    {
+        private readonly Dictionary<string, List<ItemLista>> _listas = [];
+
+        public bool Falhar { get; set; }
+
+        public bool Cancelar { get; set; }
+
+        public void Guardar(string login, IReadOnlyList<ItemLista> itens) => _listas[login] = itens.ToList();
+
+        public IReadOnlyList<ItemLista>? Itens(string login) =>
+            _listas.TryGetValue(login, out var itens) ? itens : null;
+
+        public Task<IReadOnlyList<ItemLista>?> ObterAsync(string login, CancellationToken cancellationToken) =>
+            Task.FromResult(Itens(login));
+
+        public Task GuardarAsync(string login, IReadOnlyList<ItemLista> itens, CancellationToken cancellationToken)
+        {
+            Guardar(login, itens);
+            return Task.CompletedTask;
+        }
+
+        public Task AtualizarAsync(string login, ItemLista item, CancellationToken cancellationToken)
+        {
+            if (Cancelar)
+                throw new OperationCanceledException();
+            if (Falhar)
+                throw new IOException("redis");
+            if (!_listas.TryGetValue(login, out var itens))
+                return Task.CompletedTask;
+
+            _listas[login] = ItemLista.Incluir(itens, item).ToList();
             return Task.CompletedTask;
         }
     }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Video.Domain.Videos;
 using Video.Infra.Filas;
 using Video.Infra.Persistence;
+using Video.Infra.Redis;
 using Video.Infra.Storage;
 
 namespace Video.Tests.Suporte;
@@ -32,6 +33,10 @@ public class VideoApiFactory : WebApplicationFactory<Program>
         Remover(servicos, typeof(IPublicadorFila));
         Remover(servicos, typeof(Video.Infra.IPreparacaoExterna));
         Remover(servicos, typeof(ConsumidorStatusHostedService));
+        Remover(servicos, typeof(IListaVideos));
+        Remover(servicos, typeof(ListaVideos));
+        Remover(servicos, typeof(ListaVideosMemoria));
+        Remover(servicos, typeof(ComandoListaRedis));
 
         servicos.AddSingleton<VideoRepositorioMemoria>();
         servicos.AddSingleton<IVideoRepository>(provedor => provedor.GetRequiredService<VideoRepositorioMemoria>());
@@ -39,6 +44,8 @@ public class VideoApiFactory : WebApplicationFactory<Program>
         servicos.AddSingleton<IArmazenamentoVideo>(provedor => provedor.GetRequiredService<ArmazenamentoMemoria>());
         servicos.AddSingleton<FilaProcessamentoMemoria>();
         servicos.AddSingleton<IFilaProcessamento>(provedor => provedor.GetRequiredService<FilaProcessamentoMemoria>());
+        servicos.AddSingleton<ListaVideosMemoria>();
+        servicos.AddSingleton<IListaVideos>(provedor => provedor.GetRequiredService<ListaVideosMemoria>());
     }
 
     protected static void Remover(IServiceCollection servicos, Type tipo)

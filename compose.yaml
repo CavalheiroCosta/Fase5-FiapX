@@ -94,6 +94,7 @@ services:
       Queue__Uri: amqp://fiapx:fiapx@rabbitmq:5672/
       Queue__Nome: processamento
       Queue__Status: status
+      Redis__Conexao: redis:6379,password=fiapx
       Token__Chave: fiapx-auth-chave-local-desenvolvimento
       Upload__LimiteBytes: "209715200"
     depends_on:
@@ -102,6 +103,8 @@ services:
       minio:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   redis:

@@ -18,6 +18,9 @@ public sealed class VideoRepository(VideoDbContext db) : IVideoRepository
     public Task<VideoEnviado?> ObterAsync(Guid id, CancellationToken cancellationToken) =>
         db.Videos.FirstOrDefaultAsync(video => video.Id == id, cancellationToken);
 
+    public async Task<IReadOnlyList<VideoEnviado>> ListarPorLoginAsync(string login, CancellationToken cancellationToken) =>
+        await db.Videos.Where(video => video.Login == login).OrderBy(video => video.Id).ToListAsync(cancellationToken);
+
     public Task AtualizarAsync(VideoEnviado video, CancellationToken cancellationToken) =>
         db.SaveChangesAsync(cancellationToken);
 }

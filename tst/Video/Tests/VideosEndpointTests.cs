@@ -109,6 +109,51 @@ public class VideosEndpointTests : IClassFixture<VideoApiFactory>
         Assert.Equal("ana@email.com", video.Email);
     }
 
+    [Fact]
+    public async Task Lista_sem_token_responde_401()
+    {
+        var client = _factory.CreateClient();
+
+        var resposta = await client.GetAsync("/videos");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+        Assert.Equal("Acesso recusado.", await Erro(resposta));
+    }
+
+    [Fact]
+    public async Task Lista_so_os_videos_do_login_e_repete_do_redis()
+    {
+        var client = _factory.CreateClient();
+        using var pedido = Pedido(TokenValido(), [1, 2], "aula.mp4");
+        var enviado = await client.SendAsync(pedido);
+        using var jsonEnvio = JsonDocument.Parse(await enviado.Content.ReadAsStringAsync());
+        var id = jsonEnvio.RootElement.GetProperty("id").GetGuid();
+
+        var lista = _factory.Services.GetRequiredService<Video.Infra.Redis.ListaVideosMemoria>();
+        Assert.Null(await lista.ObterAsync("ana", CancellationToken.None));
+
+        var primeira = await client.SendAsync(Listar(TokenValido()));
+        Assert.Equal(HttpStatusCode.OK, primeira.StatusCode);
+        using var json = JsonDocument.Parse(await primeira.Content.ReadAsStringAsync());
+        var item = json.RootElement.EnumerateArray().Single(elemento => elemento.GetProperty("id").GetGuid() == id);
+        Assert.Equal("aguardando_processamento", item.GetProperty("status").GetString());
+        Assert.False(item.TryGetProperty("caminhoZip", out _));
+
+        var repositorio = _factory.Services.GetRequiredService<Video.Infra.Persistence.VideoRepositorioMemoria>();
+        var video = Assert.Single(repositorio.Listar(), gravado => gravado.Id == id);
+        Assert.Equal(Video.Domain.Videos.EfeitoStatus.Alterado, video.Aplicar(Video.Domain.Videos.MomentoStatus.Sucesso, $"videos/{id:D}/{id:D}.zip"));
+
+        var segunda = await client.SendAsync(Listar(TokenValido()));
+        using var jsonSegunda = JsonDocument.Parse(await segunda.Content.ReadAsStringAsync());
+        var itemSegunda = jsonSegunda.RootElement.EnumerateArray().Single(elemento => elemento.GetProperty("id").GetGuid() == id);
+        Assert.Equal("aguardando_processamento", itemSegunda.GetProperty("status").GetString());
+
+        var deOutro = await client.SendAsync(Listar(TokenDe("bia", "bia@email.com")));
+        Assert.Equal(HttpStatusCode.OK, deOutro.StatusCode);
+        using var jsonOutro = JsonDocument.Parse(await deOutro.Content.ReadAsStringAsync());
+        Assert.Empty(jsonOutro.RootElement.EnumerateArray());
+    }
+
     private static HttpRequestMessage Pedido(string? token, byte[] bytes, string nome)
     {
         var conteudo = new MultipartFormDataContent();
@@ -122,8 +167,19 @@ public class VideosEndpointTests : IClassFixture<VideoApiFactory>
         return pedido;
     }
 
-    private static string TokenValido() =>
-        TokenDeTeste.Emitir(Chave, "ana", "ana@email.com", DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(30));
+    private static HttpRequestMessage Listar(string? token)
+    {
+        var pedido = new HttpRequestMessage(HttpMethod.Get, "/videos");
+        if (token is not null)
+            pedido.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        return pedido;
+    }
+
+    private static string TokenValido() => TokenDe("ana", "ana@email.com");
+
+    private static string TokenDe(string login, string email) =>
+        TokenDeTeste.Emitir(Chave, login, email, DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(30));
 
     private static async Task<string> Erro(HttpResponseMessage resposta)
     {

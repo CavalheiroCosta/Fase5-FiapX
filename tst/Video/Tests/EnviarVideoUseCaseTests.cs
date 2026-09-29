@@ -14,7 +14,7 @@ public class EnviarVideoUseCaseTests
         var armazenamento = new ArmazenamentoFalso();
         var repositorio = new RepositorioFalso();
         var fila = new FilaFalsa();
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila);
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila, new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync(null, "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -29,7 +29,7 @@ public class EnviarVideoUseCaseTests
     public async Task Token_invalido_recusa_antes_do_storage()
     {
         var armazenamento = new ArmazenamentoFalso();
-        var caso = Caso(new LeitorFalso { Identidade = null }, armazenamento, new RepositorioFalso(), new FilaFalsa());
+        var caso = Caso(new LeitorFalso { Identidade = null }, armazenamento, new RepositorioFalso(), new FilaFalsa(), new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -43,7 +43,7 @@ public class EnviarVideoUseCaseTests
     public async Task Arquivo_vazio_responde_validacao(long tamanho)
     {
         var armazenamento = new ArmazenamentoFalso();
-        var caso = Caso(new LeitorFalso(), armazenamento, new RepositorioFalso(), new FilaFalsa());
+        var caso = Caso(new LeitorFalso(), armazenamento, new RepositorioFalso(), new FilaFalsa(), new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream(), tamanho, CancellationToken.None);
 
@@ -54,7 +54,7 @@ public class EnviarVideoUseCaseTests
     [Fact]
     public async Task Stream_nulo_ou_nome_invalido_responde_validacao()
     {
-        var caso = Caso(new LeitorFalso(), new ArmazenamentoFalso(), new RepositorioFalso(), new FilaFalsa());
+        var caso = Caso(new LeitorFalso(), new ArmazenamentoFalso(), new RepositorioFalso(), new FilaFalsa(), new ListaFalsa());
 
         var semStream = await caso.ExecutarAsync("token", "aula.mp4", null, 1, CancellationToken.None);
         var semNome = await caso.ExecutarAsync("token", "  ", new MemoryStream([1]), 1, CancellationToken.None);
@@ -69,7 +69,7 @@ public class EnviarVideoUseCaseTests
     public async Task Arquivo_acima_do_limite_nao_grava()
     {
         var armazenamento = new ArmazenamentoFalso();
-        var caso = Caso(new LeitorFalso(), armazenamento, new RepositorioFalso(), new FilaFalsa());
+        var caso = Caso(new LeitorFalso(), armazenamento, new RepositorioFalso(), new FilaFalsa(), new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), Limite + 1, CancellationToken.None);
 
@@ -84,7 +84,9 @@ public class EnviarVideoUseCaseTests
         var armazenamento = new ArmazenamentoFalso { Ordem = ordem };
         var repositorio = new RepositorioFalso { Ordem = ordem };
         var fila = new FilaFalsa { Ordem = ordem };
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila);
+        var lista = new ListaFalsa();
+        lista.Guardar("ana", []);
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila, lista);
 
         var resultado = await caso.ExecutarAsync("token", "pasta/aula.mp4", new MemoryStream([1, 2]), Limite, CancellationToken.None);
 
@@ -98,6 +100,10 @@ public class EnviarVideoUseCaseTests
         Assert.Null(repositorio.Videos.Single().CaminhoZip);
         Assert.Equal(resultado.Valor.Id, fila.Mensagens.Single().Id);
         Assert.Equal(resultado.Valor.Caminho, fila.Mensagens.Single().Caminho);
+        var item = Assert.Single(lista.Itens("ana")!);
+        Assert.Equal(resultado.Valor.Id, item.Id);
+        Assert.Equal(StatusVideo.AguardandoProcessamento, item.Status);
+        Assert.Null(item.CaminhoZip);
     }
 
     [Fact]
@@ -106,7 +112,7 @@ public class EnviarVideoUseCaseTests
         var armazenamento = new ArmazenamentoFalso { Falhar = true };
         var repositorio = new RepositorioFalso();
         var fila = new FilaFalsa();
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila);
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila, new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -121,7 +127,7 @@ public class EnviarVideoUseCaseTests
         var armazenamento = new ArmazenamentoFalso();
         var repositorio = new RepositorioFalso { Falhar = true };
         var fila = new FilaFalsa();
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila);
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila, new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -135,7 +141,7 @@ public class EnviarVideoUseCaseTests
     {
         var armazenamento = new ArmazenamentoFalso { FalharRemocao = true };
         var repositorio = new RepositorioFalso { Falhar = true };
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, new FilaFalsa());
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, new FilaFalsa(), new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -147,7 +153,7 @@ public class EnviarVideoUseCaseTests
     {
         var armazenamento = new ArmazenamentoFalso { Caminho = "" };
         var repositorio = new RepositorioFalso();
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, new FilaFalsa());
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, new FilaFalsa(), new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -162,7 +168,7 @@ public class EnviarVideoUseCaseTests
         var armazenamento = new ArmazenamentoFalso();
         var repositorio = new RepositorioFalso();
         var fila = new FilaFalsa { Falhar = true };
-        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila);
+        var caso = Caso(new LeitorFalso(), armazenamento, repositorio, fila, new ListaFalsa());
 
         var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
 
@@ -174,10 +180,48 @@ public class EnviarVideoUseCaseTests
     }
 
     [Fact]
+    public async Task Falha_da_lista_nao_desfaz_o_envio()
+    {
+        var repositorio = new RepositorioFalso();
+        var fila = new FilaFalsa();
+        var lista = new ListaFalsa { Falhar = true };
+        var caso = Caso(new LeitorFalso(), new ArmazenamentoFalso(), repositorio, fila, lista);
+
+        var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
+
+        Assert.True(resultado.Sucesso);
+        Assert.Single(repositorio.Videos);
+        Assert.Single(fila.Mensagens);
+    }
+
+    [Fact]
+    public async Task Lista_ausente_nao_grava_entrada_parcial()
+    {
+        var lista = new ListaFalsa();
+        var caso = Caso(new LeitorFalso(), new ArmazenamentoFalso(), new RepositorioFalso(), new FilaFalsa(), lista);
+
+        var resultado = await caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None);
+
+        Assert.True(resultado.Sucesso);
+        Assert.Null(lista.Itens("ana"));
+    }
+
+    [Fact]
+    public async Task Cancelamento_da_lista_nao_vira_erro_de_envio()
+    {
+        var lista = new ListaFalsa { Cancelar = true };
+        lista.Guardar("ana", []);
+        var caso = Caso(new LeitorFalso(), new ArmazenamentoFalso(), new RepositorioFalso(), new FilaFalsa(), lista);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Cancelamento_nao_vira_erro_de_storage()
     {
         var armazenamento = new ArmazenamentoFalso { Cancelar = true };
-        var caso = Caso(new LeitorFalso(), armazenamento, new RepositorioFalso(), new FilaFalsa());
+        var caso = Caso(new LeitorFalso(), armazenamento, new RepositorioFalso(), new FilaFalsa(), new ListaFalsa());
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             caso.ExecutarAsync("token", "aula.mp4", new MemoryStream([1]), 1, CancellationToken.None));
@@ -187,8 +231,9 @@ public class EnviarVideoUseCaseTests
         ILeitorToken leitor,
         IArmazenamentoVideo armazenamento,
         IVideoRepository repositorio,
-        IFilaProcessamento fila) =>
-        new(leitor, armazenamento, repositorio, fila, Limite);
+        IFilaProcessamento fila,
+        IListaVideos lista) =>
+        new(leitor, armazenamento, repositorio, fila, lista, Limite);
 
     private sealed class LeitorFalso : ILeitorToken
     {
@@ -253,8 +298,47 @@ public class EnviarVideoUseCaseTests
         public Task<Video.Domain.Videos.Video?> ObterAsync(Guid id, CancellationToken cancellationToken) =>
             Task.FromResult(Videos.FirstOrDefault(video => video.Id == id));
 
+        public Task<IReadOnlyList<Video.Domain.Videos.Video>> ListarPorLoginAsync(string login, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<Video.Domain.Videos.Video>>(Videos.Where(video => video.Login == login).ToArray());
+
         public Task AtualizarAsync(Video.Domain.Videos.Video video, CancellationToken cancellationToken) =>
             Task.CompletedTask;
+    }
+
+    private sealed class ListaFalsa : IListaVideos
+    {
+        private readonly Dictionary<string, List<ItemLista>> _listas = [];
+
+        public bool Falhar { get; set; }
+
+        public bool Cancelar { get; set; }
+
+        public void Guardar(string login, IReadOnlyList<ItemLista> itens) => _listas[login] = itens.ToList();
+
+        public IReadOnlyList<ItemLista>? Itens(string login) =>
+            _listas.TryGetValue(login, out var itens) ? itens : null;
+
+        public Task<IReadOnlyList<ItemLista>?> ObterAsync(string login, CancellationToken cancellationToken) =>
+            Task.FromResult(Itens(login));
+
+        public Task GuardarAsync(string login, IReadOnlyList<ItemLista> itens, CancellationToken cancellationToken)
+        {
+            Guardar(login, itens);
+            return Task.CompletedTask;
+        }
+
+        public Task AtualizarAsync(string login, ItemLista item, CancellationToken cancellationToken)
+        {
+            if (Cancelar)
+                throw new OperationCanceledException();
+            if (Falhar)
+                throw new IOException("redis");
+            if (!_listas.TryGetValue(login, out var itens))
+                return Task.CompletedTask;
+
+            _listas[login] = ItemLista.Incluir(itens, item).ToList();
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FilaFalsa : IFilaProcessamento
