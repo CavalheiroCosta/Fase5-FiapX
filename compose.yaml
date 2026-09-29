@@ -93,6 +93,7 @@ services:
       Storage__SecretKey: fiapxfiapx
       Queue__Uri: amqp://fiapx:fiapx@rabbitmq:5672/
       Queue__Nome: processamento
+      Queue__Status: status
       Token__Chave: fiapx-auth-chave-local-desenvolvimento
       Upload__LimiteBytes: "209715200"
     depends_on:

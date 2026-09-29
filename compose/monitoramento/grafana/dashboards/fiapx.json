@@ -201,6 +201,20 @@
           ]
         }
       }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Video — status aplicado",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (momento) (fiapx_video_status_total{job=\"video\"})",
+          "legendFormat": "{{momento}}"
+        }
+      ]
     }
   ]
 }
