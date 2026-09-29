@@ -52,6 +52,7 @@ public class PrepararVideoTests
         Assert.IsType<ArmazenamentoMemoria>(provedor.GetRequiredService<IArmazenamentoVideo>());
         Assert.IsType<FilaProcessamentoMemoria>(provedor.GetRequiredService<IFilaProcessamento>());
         Assert.Empty(provedor.GetServices<IPreparacaoExterna>());
+        Assert.DoesNotContain(servicos, descritor => descritor.ImplementationType == typeof(ConsumidorStatusHostedService));
     }
 
     [Fact]
@@ -77,6 +78,9 @@ public class PrepararVideoTests
         Assert.IsType<ArmazenamentoS3>(provedor.GetRequiredService<IArmazenamentoVideo>());
         Assert.IsType<FilaProcessamento>(provedor.GetRequiredService<IFilaProcessamento>());
         Assert.Equal(2, provedor.GetServices<IPreparacaoExterna>().Count());
+        Assert.Contains(servicos, descritor => descritor.ImplementationType == typeof(ConsumidorStatusHostedService));
+        var sessao = provedor.GetRequiredService<Func<ISessaoStatus>>()();
+        Assert.IsType<SessaoStatus>(sessao);
         (provedor.GetRequiredService<IClienteObjeto>() as IDisposable)?.Dispose();
     }
 

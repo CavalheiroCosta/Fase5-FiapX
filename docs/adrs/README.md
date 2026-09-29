@@ -16,5 +16,6 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-010](./ADR-010-monitoramento-no-compose.md) | Prometheus e Grafana no Compose |
 | [ADR-011](./ADR-011-contrato-fila-status.md) | Contrato da fila de status, da marca e do ZIP |
 | [ADR-012](./ADR-012-metricas-do-processor.md) | Métricas do processor no Compose |
+| [ADR-013](./ADR-013-aplica-status-no-registro.md) | A Video API aplica o status no registro |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.

@@ -24,4 +24,13 @@ public sealed class VideoRepositorioMemoria : IVideoRepository
 
         return Task.CompletedTask;
     }
+
+    public Task<VideoEnviado?> ObterAsync(Guid id, CancellationToken cancellationToken)
+    {
+        lock (_trava)
+            return Task.FromResult(_videos.FirstOrDefault(video => video.Id == id));
+    }
+
+    public Task AtualizarAsync(VideoEnviado video, CancellationToken cancellationToken) =>
+        Task.CompletedTask;
 }

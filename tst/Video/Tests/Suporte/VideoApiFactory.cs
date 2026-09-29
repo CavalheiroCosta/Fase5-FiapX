@@ -31,6 +31,7 @@ public class VideoApiFactory : WebApplicationFactory<Program>
         Remover(servicos, typeof(FilaProcessamentoMemoria));
         Remover(servicos, typeof(IPublicadorFila));
         Remover(servicos, typeof(Video.Infra.IPreparacaoExterna));
+        Remover(servicos, typeof(ConsumidorStatusHostedService));
 
         servicos.AddSingleton<VideoRepositorioMemoria>();
         servicos.AddSingleton<IVideoRepository>(provedor => provedor.GetRequiredService<VideoRepositorioMemoria>());

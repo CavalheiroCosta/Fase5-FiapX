@@ -29,9 +29,10 @@ O intervalo do gráfico é de 1 minuto. O scrape do Prometheus é de 15 segundos
 - **MinIO — bytes recebidos no bucket videos.** Sobe no envio e de novo quando o ZIP é gravado.
 - **RabbitMQ — fila processamento.** Quantidade de mensagens na fila `processamento`. Sobe no envio e esvazia quando o processor confirma a mensagem.
 - **Processor — resultados.** Contador `fiapx_processor_resultados_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
-- **RabbitMQ — fila status.** Quantidade de mensagens na fila `status`. Fica com `comecou` e depois `sucesso` ou `erro`, porque a Video API ainda não consome essa fila.
+- **RabbitMQ — fila status.** Quantidade de mensagens na fila `status`. Sobe com `comecou` e depois `sucesso` ou `erro`, e esvazia quando a Video API confirma a mensagem.
 - **Processor — em andamento.** Gauge `fiapx_processor_em_andamento`. Vale 1 enquanto o ffmpeg roda. O scrape pode não pegar um vídeo curto.
 - **Redis.** `no ar` quando o exporter alcança o Redis.
+- **Video — status aplicado.** Contador `fiapx_video_status_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
 
 ## Prova do processor
 
@@ -45,9 +46,9 @@ ffmpeg -f lavfi -i testsrc=duration=2:size=160x120:rate=1 -pix_fmt yuv420p amost
 2. `POST http://localhost:5299/videos` com o campo `arquivo` e `Authorization: Bearer`.
 3. No console do MinIO (`http://localhost:9001`, usuário `fiapx`, senha `fiapxfiapx`), o bucket `videos` mostra `{id}/{id}.zip`.
 4. No painel do RabbitMQ (`http://localhost:15672`, usuário `fiapx`, senha `fiapx`), a fila `processamento` esvazia. A fila `status` mostra `comecou` e depois `sucesso`, com o caminho `videos/{id}/{id}.zip`.
-5. Espere um scrape. No Grafana, o contador do processor sobe e a fila `status` permanece.
-6. Envie um arquivo que não é vídeo. A fila `status` recebe `erro`, o ZIP não aparece e a mensagem não volta para `processamento`.
-7. A linha em `fiapx_videos` continua `aguardando_processamento`. Mudar esse status é a Feature 4.
+5. Espere um scrape. No Grafana, o contador do processor sobe. A fila `status` esvazia. O painel `Video — status aplicado` mostra `comecou` e `sucesso`.
+6. Envie um arquivo que não é vídeo. A fila `status` recebe `erro` e esvazia, o ZIP não aparece e a mensagem não volta para `processamento`. A linha em `fiapx_videos` fica `erro`.
+7. No sucesso, a linha em `fiapx_videos` fica `concluido` e `caminho_zip` deixa de ser nulo.
 
 A marca some no sucesso e no erro. Para vê-la durante o trabalho, use um vídeo mais longo e, enquanto o ffmpeg roda:
 
@@ -57,4 +58,4 @@ docker exec (docker compose ps -q redis) redis-cli -a fiapx --no-auth-warning KE
 
 ## Fora deste painel
 
-Listagem, download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md` e `docs/adrs/ADR-012-metricas-do-processor.md`.
+Listagem, download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md` e `docs/adrs/ADR-013-aplica-status-no-registro.md`.

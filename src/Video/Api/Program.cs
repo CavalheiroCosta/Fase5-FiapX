@@ -18,10 +18,12 @@ builder.Services.AddHostedService<PrepararVideoHostedService>();
 builder.Services.AddOpenTelemetry()
     .WithMetrics(metricas => metricas
         .AddAspNetCoreInstrumentation()
+        .AddMeter(MetricasVideo.NomeMedidor)
         .AddPrometheusExporter());
 
 var app = builder.Build();
 
+_ = app.Services.GetRequiredService<MetricasVideo>();
 app.MapControllers();
 app.MapPrometheusScrapingEndpoint();
 

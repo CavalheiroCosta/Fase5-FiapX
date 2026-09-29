@@ -25,10 +25,10 @@ sequenceDiagram
     Fila-->>Cliente: 201
 ```
 
-`GET /` responde 404. `GET /metrics` responde o texto do Prometheus e não exige token.
+O host consome a fila `status` e grava `em_processamento`, `concluido` ou `erro` no Postgres. `GET /` responde 404. `GET /metrics` responde o texto do Prometheus, inclusive `fiapx_video_status`, e não exige token.
 
 Este projeto referencia Application e Infra. As regras ficam no Domain. PostgreSQL, MinIO e RabbitMQ ficam na Infra. A chave local do token está em `appsettings.json` e é a mesma da Auth.
 
-O corte está em [`planning/planning.md`](../../../planning/planning.md). O contrato está em [`docs/adrs/ADR-009-contrato-upload-e-fila.md`](../../../docs/adrs/ADR-009-contrato-upload-e-fila.md).
+O corte está em [`planning/planning.md`](../../../planning/planning.md). O envio está em [`docs/adrs/ADR-009-contrato-upload-e-fila.md`](../../../docs/adrs/ADR-009-contrato-upload-e-fila.md). O status está em [`docs/adrs/ADR-013-aplica-status-no-registro.md`](../../../docs/adrs/ADR-013-aplica-status-no-registro.md).
 
 A imagem em `Dockerfile` publica este projeto. O CI gera a tag local `fase5-video:ci` e não publica.
