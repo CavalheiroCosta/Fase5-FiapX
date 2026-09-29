@@ -1,9 +1,9 @@
 # Como verificar o monitoramento
 
-Prometheus coleta o que já existe. O Grafana mostra isso num painel só. O processor, o Redis, a fila `status`, a listagem, o download e o e-mail ainda não entram aqui. A feature seguinte acrescenta painel no mesmo dashboard, em `compose/monitoramento/grafana/dashboards/fiapx.json`.
+Prometheus coleta o que já existe. O Grafana mostra isso num painel só. A listagem, o download e o e-mail ainda não entram aqui. A feature seguinte acrescenta painel no mesmo dashboard, em `compose/monitoramento/grafana/dashboards/fiapx.json`.
 
 ```powershell
-docker compose up -d
+docker compose up -d --build
 ```
 
 | Onde | Endereço | O que confere |
@@ -11,22 +11,50 @@ docker compose up -d
 | Prometheus | `http://localhost:9090/targets` | Cada alvo em UP |
 | Auth | `http://localhost:5298/metrics` | Texto de métrica, sem token |
 | Video API | `http://localhost:5299/metrics` | Texto de métrica, sem token |
+| Processor | `http://localhost:5300/metrics` | Texto de métrica, sem token |
 | Grafana | `http://localhost:3000` | Usuário `fiapx`, senha `fiapx`, dashboard `FIAP X` |
+| Redis | `localhost:6379` | Senha `fiapx`. A chave `marca:{id}` só existe enquanto o trabalho dura |
 
-Os alvos em UP são `auth`, `video`, `postgres-usuarios`, `postgres-videos`, `minio`, `minio-bucket` e `rabbitmq`.
+Os alvos em UP são `auth`, `video`, `processor`, `postgres-usuarios`, `postgres-videos`, `minio`, `minio-bucket`, `rabbitmq` e `redis`.
 
 ## O que cada painel mostra
 
-O intervalo do gráfico é de 1 minuto. Uma chamada aparece e depois sai.
+O intervalo do gráfico é de 1 minuto. O scrape do Prometheus é de 15 segundos. Uma chamada HTTP aparece e depois sai. O contador do processor e a fila `status` permanecem.
 
 - **Auth — requisições por rota.** A série `/metrics` aparece sozinha, porque o Prometheus raspa a Auth. `POST http://localhost:5298/login` com `{"login":"Adm","senha":"Adm"}` faz surgir `login`. `GET /usuarios` com o token faz surgir `usuarios`.
 - **Video — envio.** Fica vazio até um `POST http://localhost:5299/videos` com o campo `arquivo` e `Authorization: Bearer`. A série é `videos`.
 - **Postgres usuários** e **Postgres vídeos.** `no ar` quando o exportador alcança o banco. `fora` quando não alcança.
 - **Tamanho dos bancos.** Bytes de `fiapx_usuarios` e `fiapx_videos`.
 - **MinIO.** `saudável` quando o cluster responde.
-- **MinIO — bytes recebidos no bucket videos.** Sobe no envio. O contador é o tráfego recebido pelo bucket `videos`.
-- **RabbitMQ — fila processamento.** Quantidade de mensagens na fila `processamento`. Sobe depois do envio e fica, porque ninguém consome essa fila neste corte.
+- **MinIO — bytes recebidos no bucket videos.** Sobe no envio e de novo quando o ZIP é gravado.
+- **RabbitMQ — fila processamento.** Quantidade de mensagens na fila `processamento`. Sobe no envio e esvazia quando o processor confirma a mensagem.
+- **Processor — resultados.** Contador `fiapx_processor_resultados_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
+- **RabbitMQ — fila status.** Quantidade de mensagens na fila `status`. Fica com `comecou` e depois `sucesso` ou `erro`, porque a Video API ainda não consome essa fila.
+- **Processor — em andamento.** Gauge `fiapx_processor_em_andamento`. Vale 1 enquanto o ffmpeg roda. O scrape pode não pegar um vídeo curto.
+- **Redis.** `no ar` quando o exporter alcança o Redis.
+
+## Prova do processor
+
+Gere um mp4 curto. Não versionar o arquivo.
+
+```powershell
+ffmpeg -f lavfi -i testsrc=duration=2:size=160x120:rate=1 -pix_fmt yuv420p amostra.mp4
+```
+
+1. Login `Adm` / `Adm` em `http://localhost:5298/login`.
+2. `POST http://localhost:5299/videos` com o campo `arquivo` e `Authorization: Bearer`.
+3. No console do MinIO (`http://localhost:9001`, usuário `fiapx`, senha `fiapxfiapx`), o bucket `videos` mostra `{id}/{id}.zip`.
+4. No painel do RabbitMQ (`http://localhost:15672`, usuário `fiapx`, senha `fiapx`), a fila `processamento` esvazia. A fila `status` mostra `comecou` e depois `sucesso`, com o caminho `videos/{id}/{id}.zip`.
+5. Espere um scrape. No Grafana, o contador do processor sobe e a fila `status` permanece.
+6. Envie um arquivo que não é vídeo. A fila `status` recebe `erro`, o ZIP não aparece e a mensagem não volta para `processamento`.
+7. A linha em `fiapx_videos` continua `aguardando_processamento`. Mudar esse status é a Feature 4.
+
+A marca some no sucesso e no erro. Para vê-la durante o trabalho, use um vídeo mais longo e, enquanto o ffmpeg roda:
+
+```powershell
+docker exec (docker compose ps -q redis) redis-cli -a fiapx --no-auth-warning KEYS "marca:*"
+```
 
 ## Fora deste painel
 
-Processor, Redis, fila `status`, listagem, download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`.
+Listagem, download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md` e `docs/adrs/ADR-012-metricas-do-processor.md`.

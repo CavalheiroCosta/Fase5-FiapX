@@ -14,5 +14,7 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-008](./ADR-008-video-le-jwt-local.md) | A Video API lê o JWT sozinha |
 | [ADR-009](./ADR-009-contrato-upload-e-fila.md) | Contrato do envio e da fila de processamento |
 | [ADR-010](./ADR-010-monitoramento-no-compose.md) | Prometheus e Grafana no Compose |
+| [ADR-011](./ADR-011-contrato-fila-status.md) | Contrato da fila de status, da marca e do ZIP |
+| [ADR-012](./ADR-012-metricas-do-processor.md) | Métricas do processor no Compose |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.
