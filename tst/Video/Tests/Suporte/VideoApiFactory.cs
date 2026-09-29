@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Video.Domain.Videos;
+using Video.Infra.Email;
 using Video.Infra.Filas;
 using Video.Infra.Persistence;
 using Video.Infra.Redis;
@@ -37,6 +38,9 @@ public class VideoApiFactory : WebApplicationFactory<Program>
         Remover(servicos, typeof(ListaVideos));
         Remover(servicos, typeof(ListaVideosMemoria));
         Remover(servicos, typeof(ComandoListaRedis));
+        Remover(servicos, typeof(IEnviadorEmail));
+        Remover(servicos, typeof(EnviadorEmailSmtp));
+        Remover(servicos, typeof(EnviadorEmailMemoria));
 
         servicos.AddSingleton<VideoRepositorioMemoria>();
         servicos.AddSingleton<IVideoRepository>(provedor => provedor.GetRequiredService<VideoRepositorioMemoria>());
@@ -46,6 +50,8 @@ public class VideoApiFactory : WebApplicationFactory<Program>
         servicos.AddSingleton<IFilaProcessamento>(provedor => provedor.GetRequiredService<FilaProcessamentoMemoria>());
         servicos.AddSingleton<ListaVideosMemoria>();
         servicos.AddSingleton<IListaVideos>(provedor => provedor.GetRequiredService<ListaVideosMemoria>());
+        servicos.AddSingleton<EnviadorEmailMemoria>();
+        servicos.AddSingleton<IEnviadorEmail>(provedor => provedor.GetRequiredService<EnviadorEmailMemoria>());
     }
 
     protected static void Remover(IServiceCollection servicos, Type tipo)

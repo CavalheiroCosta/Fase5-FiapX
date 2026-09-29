@@ -19,14 +19,14 @@ Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Aut
 - Envio, listagem e download exigem o token na requisição. O token traz o usuário e o e-mail.
 - A Video API grava o vídeo no MinIO, o registro no PostgreSQL de vídeos e publica na fila de processamento só o identificador e o caminho.
 - O processor consome essa fila, marca o vídeo no Redis, quebra o vídeo, grava o ZIP no MinIO e publica o resultado na fila de status.
-- A Video API aplica o status no PostgreSQL. A listagem sai do Redis. No erro, ela envia o e-mail. O processor não escreve no banco e não envia e-mail.
+- A Video API aplica o status no PostgreSQL. A listagem sai do Redis. No erro, ela envia o e-mail pelo Mailpit. O processor não escreve no banco e não envia e-mail.
 - Download do ZIP só com status `concluido`.
 - Erro de processamento não volta para a fila. O vídeo permanece `erro`.
-- A ordem de implementação está em `planning/Fiapx-todo.md`. A Feature 6 já entrega o ZIP quando o vídeo está `concluido`. O e-mail de erro é a Feature 7.
+- A ordem de implementação está em `planning/Fiapx-todo.md`. A Feature 7 já avisa o dono quando o vídeo fica `erro`. Publicação da imagem e deploy ficam fora.
 
 ## Ambiente local
 
-O Docker Compose deste corte sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o processor, o MinIO, o RabbitMQ, o Redis, o Prometheus e o Grafana. Os serviços apontam para esse compose e o envio roda sem nuvem. A prova do painel está em `docs/monitoramento.md`.
+O Docker Compose deste corte sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o processor, o MinIO, o RabbitMQ, o Redis, o Mailpit, o Prometheus e o Grafana. Os serviços apontam para esse compose e o envio roda sem nuvem. A prova do painel está em `docs/monitoramento.md`.
 
 A fila na nuvem usa o mesmo contrato. O produto da nuvem ainda não foi escolhido.
 

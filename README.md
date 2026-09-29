@@ -9,14 +9,14 @@ O desenho do sistema está em [`planning/planning.md`](planning/planning.md). A 
 | Serviço | Estado | Guia |
 | --- | --- | --- |
 | Auth API | Login emite JWT HMAC. O cadastro exige o token da conta `Adm`. | [`planning/auth.md`](planning/auth.md) |
-| Video API | `POST /videos` grava no MinIO, registra como aguardando e publica a referência. Consome a fila `status` e grava o status no Postgres. `GET /videos` lista o login a partir do Redis. `GET /videos/{id}/download` entrega o ZIP quando o status é `concluido`. | [`planning/planning.md`](planning/planning.md) |
+| Video API | `POST /videos` grava no MinIO, registra como aguardando e publica a referência. Consome a fila `status` e grava o status no Postgres. `GET /videos` lista o login a partir do Redis. `GET /videos/{id}/download` entrega o ZIP quando o status é `concluido`. No `erro`, envia e-mail ao dono. | [`planning/planning.md`](planning/planning.md) |
 | Video Processor API | Consome a fila `processamento`, marca no Redis, grava o ZIP e publica na fila `status`. | [`planning/planning.md`](planning/planning.md) |
 
 A Auth, a Video e o processor usam as camadas Api, Application, Domain e Infra, em `src/Auth`, `src/Video` e `src/Processor`. Cada projeto tem o próprio `README.md`.
 
 ## Ambiente local
 
-O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o processor, o MinIO, o RabbitMQ, o Redis, o Prometheus e o Grafana:
+O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o processor, o MinIO, o RabbitMQ, o Redis, o Mailpit, o Prometheus e o Grafana:
 
 ```powershell
 docker compose up -d
@@ -30,12 +30,13 @@ docker compose up -d
 | MinIO | API `http://localhost:9000`, console `http://localhost:9001` (usuário `fiapx`, senha `fiapxfiapx`) |
 | RabbitMQ | AMQP `localhost:5672`, painel `http://localhost:15672` (usuário `fiapx`, senha `fiapx`) |
 | Redis | `localhost:6379`, senha `fiapx` |
+| Mailpit | painel `http://localhost:8025`, SMTP `localhost:1025` |
 | Prometheus | `http://localhost:9090/targets` |
 | Grafana | `http://localhost:3000` (usuário `fiapx`, senha `fiapx`), dashboard `FIAP X` |
 
 Fora do Compose, em desenvolvimento, a Auth grava em `localhost:5432` e a Video API aponta para essas mesmas portas do host.
 
-O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. O processor consome essa fila, grava `{id}/{id}.zip` e publica na fila `status`. A Video API aplica esse resultado no Postgres. `GET /videos` exige o token e devolve a lista daquele login, lida do Redis. `GET /videos/{id}/download` exige o token e entrega o ZIP do storage quando o status é `concluido`. A Auth, a Video e o processor expõem `GET /metrics` sem token. Como ver cada painel está em [`docs/monitoramento.md`](docs/monitoramento.md). O e-mail de erro é a Feature 7. A ordem está em [`planning/Fiapx-todo.md`](planning/Fiapx-todo.md).
+O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. O processor consome essa fila, grava `{id}/{id}.zip` e publica na fila `status`. A Video API aplica esse resultado no Postgres. `GET /videos` exige o token e devolve a lista daquele login, lida do Redis. `GET /videos/{id}/download` exige o token e entrega o ZIP do storage quando o status é `concluido`. No `erro`, a Video API envia um e-mail ao dono pelo Mailpit. A Auth, a Video e o processor expõem `GET /metrics` sem token. Como ver cada painel está em [`docs/monitoramento.md`](docs/monitoramento.md). Publicação da imagem e deploy ficam fora. A ordem está em [`planning/Fiapx-todo.md`](planning/Fiapx-todo.md).
 
 ## Testes
 

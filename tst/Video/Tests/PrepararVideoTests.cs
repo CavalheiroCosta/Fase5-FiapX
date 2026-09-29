@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Video.Domain.Videos;
 using Video.Infra;
+using Video.Infra.Email;
 using Video.Infra.Filas;
 using Video.Infra.Persistence;
 using Video.Infra.Redis;
@@ -53,6 +54,7 @@ public class PrepararVideoTests
         Assert.IsType<ArmazenamentoMemoria>(provedor.GetRequiredService<IArmazenamentoVideo>());
         Assert.IsType<FilaProcessamentoMemoria>(provedor.GetRequiredService<IFilaProcessamento>());
         Assert.IsType<ListaVideosMemoria>(provedor.GetRequiredService<IListaVideos>());
+        Assert.IsType<EnviadorEmailMemoria>(provedor.GetRequiredService<IEnviadorEmail>());
         Assert.Empty(provedor.GetServices<IPreparacaoExterna>());
         Assert.DoesNotContain(servicos, descritor => descritor.ImplementationType == typeof(ConsumidorStatusHostedService));
     }
@@ -72,7 +74,10 @@ public class PrepararVideoTests
             ["Storage:Bucket"] = "",
             ["Queue:Uri"] = "amqp://fiapx:fiapx@localhost:5672/",
             ["Queue:Nome"] = " ",
-            ["Redis:Conexao"] = "localhost:6379,password=fiapx"
+            ["Redis:Conexao"] = "localhost:6379,password=fiapx",
+            ["Email:Host"] = "localhost",
+            ["Email:Port"] = "1025",
+            ["Email:Remetente"] = "fiapx@fiapx.local"
         }));
         using var provedor = servicos.BuildServiceProvider();
 
@@ -81,6 +86,7 @@ public class PrepararVideoTests
         Assert.IsType<ArmazenamentoS3>(provedor.GetRequiredService<IArmazenamentoVideo>());
         Assert.IsType<FilaProcessamento>(provedor.GetRequiredService<IFilaProcessamento>());
         Assert.IsType<ListaVideos>(provedor.GetRequiredService<IListaVideos>());
+        Assert.IsType<EnviadorEmailSmtp>(provedor.GetRequiredService<IEnviadorEmail>());
         Assert.Equal(2, provedor.GetServices<IPreparacaoExterna>().Count());
         Assert.Contains(servicos, descritor => descritor.ImplementationType == typeof(ConsumidorStatusHostedService));
         var sessao = provedor.GetRequiredService<Func<ISessaoStatus>>()();
@@ -105,6 +111,34 @@ public class PrepararVideoTests
         Assert.Throws<ArgumentException>(() => new ComandoListaRedis(" "));
         var comando = new ComandoListaRedis("localhost:6379,password=fiapx");
         comando.Dispose();
+    }
+
+    [Fact]
+    public void Email_sem_host_nao_registra_o_envio()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            new ServiceCollection().AddInfrastructure(Configuracao(new Dictionary<string, string?>
+            {
+                ["Token:Chave"] = "0123456789abcdef0123456789abcdef",
+                ["Storage:ServiceUrl"] = "http://localhost:9000",
+                ["Storage:AccessKey"] = "fiapx",
+                ["Storage:SecretKey"] = "fiapxfiapx",
+                ["Queue:Uri"] = "amqp://fiapx:fiapx@localhost:5672/",
+                ["Redis:Conexao"] = "localhost:6379,password=fiapx"
+            })));
+
+        Assert.Throws<InvalidOperationException>(() =>
+            new ServiceCollection().AddInfrastructure(Configuracao(new Dictionary<string, string?>
+            {
+                ["Token:Chave"] = "0123456789abcdef0123456789abcdef",
+                ["Storage:ServiceUrl"] = "http://localhost:9000",
+                ["Storage:AccessKey"] = "fiapx",
+                ["Storage:SecretKey"] = "fiapxfiapx",
+                ["Queue:Uri"] = "amqp://fiapx:fiapx@localhost:5672/",
+                ["Redis:Conexao"] = "localhost:6379,password=fiapx",
+                ["Email:Host"] = "localhost",
+                ["Email:Port"] = "0"
+            })));
     }
 
     [Fact]
