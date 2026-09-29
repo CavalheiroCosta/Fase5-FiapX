@@ -59,7 +59,34 @@ public sealed class CanalStatusRabbit : ICanalStatus, IAsyncDisposable
         await _canal.BasicConsumeAsync(_fila, autoAck: false, consumidor, cancellationToken);
     }
 
-    public async Task<PacoteStatus?> ReceberAsync(CancellationToken cancellationToken)
+    public Task<PacoteStatus?> ReceberAsync(CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromResult<PacoteStatus?>(null);
+
+        return LerAsync(cancellationToken);
+    }
+
+    public async Task ConfirmarAsync(ulong etiqueta, CancellationToken cancellationToken) =>
+        await ExigirCanal().BasicAckAsync(etiqueta, multiple: false, cancellationToken);
+
+    public async Task RecolocarAsync(ulong etiqueta, CancellationToken cancellationToken) =>
+        await ExigirCanal().BasicNackAsync(etiqueta, multiple: false, requeue: true, cancellationToken);
+
+    public async ValueTask DisposeAsync()
+    {
+        _pacotes.Writer.TryComplete();
+        if (_conexao is not null)
+            _conexao.ConnectionShutdownAsync -= AoCairAsync;
+
+        if (_canal is not null)
+            await _canal.DisposeAsync();
+
+        if (_conexao is not null)
+            await _conexao.DisposeAsync();
+    }
+
+    private async Task<PacoteStatus?> LerAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -71,35 +98,14 @@ public sealed class CanalStatusRabbit : ICanalStatus, IAsyncDisposable
         }
     }
 
-    public async Task ConfirmarAsync(ulong etiqueta, CancellationToken cancellationToken)
-    {
-        var canal = _canal ?? throw new InvalidOperationException("A fila não está preparada.");
-        await canal.BasicAckAsync(etiqueta, multiple: false, cancellationToken);
-    }
-
-    public async Task RecolocarAsync(ulong etiqueta, CancellationToken cancellationToken)
-    {
-        var canal = _canal ?? throw new InvalidOperationException("A fila não está preparada.");
-        await canal.BasicNackAsync(etiqueta, multiple: false, requeue: true, cancellationToken);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        _pacotes.Writer.TryComplete();
-        if (_canal is not null)
-            await _canal.DisposeAsync();
-        if (_conexao is not null)
-        {
-            _conexao.ConnectionShutdownAsync -= AoCairAsync;
-            await _conexao.DisposeAsync();
-        }
-    }
+    private IChannel ExigirCanal() =>
+        _canal ?? throw new InvalidOperationException("A fila de status não está preparada.");
 
     private Task AoCairAsync(object? remetente, ShutdownEventArgs argumentos)
     {
         _ = remetente;
         _ = argumentos;
-        _pacotes.Writer.TryComplete(new IOException("A conexão com a fila caiu."));
+        _pacotes.Writer.TryComplete(new IOException("A fila de status caiu."));
         return Task.CompletedTask;
     }
 }

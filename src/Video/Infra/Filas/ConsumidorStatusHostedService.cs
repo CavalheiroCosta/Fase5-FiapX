@@ -3,52 +3,49 @@ using Microsoft.Extensions.Logging;
 
 namespace Video.Infra.Filas;
 
-public sealed class ConsumidorStatusHostedService : BackgroundService
+public sealed class ConsumidorStatusHostedService(
+    Func<ISessaoStatus> fabrica,
+    TimeSpan espera,
+    ILogger<ConsumidorStatusHostedService> logger) : BackgroundService
 {
-    private readonly Func<ISessaoStatus> _fabrica;
-    private readonly TimeSpan _espera;
-    private readonly ILogger<ConsumidorStatusHostedService> _logger;
-
     public ConsumidorStatusHostedService(Func<ISessaoStatus> fabrica, ILogger<ConsumidorStatusHostedService> logger)
         : this(fabrica, TimeSpan.FromSeconds(2), logger)
     {
     }
 
-    public ConsumidorStatusHostedService(
-        Func<ISessaoStatus> fabrica,
-        TimeSpan espera,
-        ILogger<ConsumidorStatusHostedService> logger)
-    {
-        _fabrica = fabrica;
-        _espera = espera;
-        _logger = logger;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (await RodarAsync(stoppingToken))
         {
             try
             {
-                var sessao = _fabrica();
-                await sessao.ExecutarAsync(stoppingToken);
+                await Task.Delay(espera, stoppingToken);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException && !stoppingToken.IsCancellationRequested)
-            {
-                _logger.LogWarning(ex, "A conexão com a fila de status caiu. Nova tentativa em seguida.");
-                try
-                {
-                    await Task.Delay(_espera, stoppingToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-            }
-            catch (Exception)
+            catch (OperationCanceledException)
             {
                 return;
             }
+        }
+    }
+
+    private async Task<bool> RodarAsync(CancellationToken stoppingToken)
+    {
+        if (stoppingToken.IsCancellationRequested)
+            return false;
+
+        try
+        {
+            await fabrica().ExecutarAsync(stoppingToken);
+            return !stoppingToken.IsCancellationRequested;
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "A conexão com a fila de status caiu. Nova tentativa em seguida.");
+            return !stoppingToken.IsCancellationRequested;
         }
     }
 }
