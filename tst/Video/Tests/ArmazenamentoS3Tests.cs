@@ -33,6 +33,20 @@ public class ArmazenamentoS3Tests
     }
 
     [Fact]
+    public async Task Abre_o_zip_pela_chave()
+    {
+        var cliente = new ClienteObjetoFalso { Conteudo = new MemoryStream([9, 8]) };
+        var armazenamento = new ArmazenamentoS3(cliente, CaminhoVideo.BucketPadrao);
+        var id = Guid.NewGuid();
+        var caminho = $"videos/{id:D}/{id:D}.zip";
+
+        await using var fluxo = await armazenamento.AbrirAsync(caminho, CancellationToken.None);
+
+        Assert.Equal((CaminhoVideo.BucketPadrao, $"{id:D}/{id:D}.zip"), cliente.Lidos.Single());
+        Assert.Equal(9, fluxo.ReadByte());
+    }
+
+    [Fact]
     public async Task Memoria_guarda_e_apaga_o_arquivo()
     {
         var armazenamento = new ArmazenamentoMemoria(CaminhoVideo.BucketPadrao);
@@ -45,17 +59,23 @@ public class ArmazenamentoS3Tests
         Assert.Equal(1, armazenamento.Contagem);
         Assert.Equal(0, armazenamento.Tamanho("videos/ausente"));
 
+        await using var aberto = await armazenamento.AbrirAsync(caminho, CancellationToken.None);
+        Assert.Equal(1, aberto.ReadByte());
+
         await armazenamento.RemoverAsync(caminho, CancellationToken.None);
 
         Assert.False(armazenamento.Contem(caminho));
         Assert.Equal(0, armazenamento.Contagem);
+        await Assert.ThrowsAsync<IOException>(() => armazenamento.AbrirAsync(caminho, CancellationToken.None));
     }
 
     private sealed class ClienteObjetoFalso : IClienteObjeto
     {
         public List<(string Bucket, string Chave)> Gravados { get; } = [];
+        public List<(string Bucket, string Chave)> Lidos { get; } = [];
         public List<(string Bucket, string Chave)> Apagados { get; } = [];
         public int Buckets { get; private set; }
+        public Stream Conteudo { get; set; } = new MemoryStream();
 
         public Task GarantirBucketAsync(string bucket, CancellationToken cancellationToken)
         {
@@ -67,6 +87,12 @@ public class ArmazenamentoS3Tests
         {
             Gravados.Add((bucket, chave));
             return Task.CompletedTask;
+        }
+
+        public Task<Stream> LerAsync(string bucket, string chave, CancellationToken cancellationToken)
+        {
+            Lidos.Add((bucket, chave));
+            return Task.FromResult(Conteudo);
         }
 
         public Task ApagarAsync(string bucket, string chave, CancellationToken cancellationToken)

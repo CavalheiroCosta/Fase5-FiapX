@@ -267,6 +267,9 @@ public class EnviarVideoUseCaseTests
             return Task.FromResult(Caminho ?? $"videos/{id:D}/{nomeArquivo}");
         }
 
+        public Task<Stream> AbrirAsync(string caminho, CancellationToken cancellationToken) =>
+            Task.FromResult<Stream>(new MemoryStream());
+
         public Task RemoverAsync(string caminho, CancellationToken cancellationToken)
         {
             Removidos.Add(caminho);

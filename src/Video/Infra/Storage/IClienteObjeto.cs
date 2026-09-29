@@ -6,5 +6,7 @@ public interface IClienteObjeto
 
     Task GravarAsync(string bucket, string chave, Stream conteudo, CancellationToken cancellationToken);
 
+    Task<Stream> LerAsync(string bucket, string chave, CancellationToken cancellationToken);
+
     Task ApagarAsync(string bucket, string chave, CancellationToken cancellationToken);
 }

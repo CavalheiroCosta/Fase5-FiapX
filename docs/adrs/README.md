@@ -18,5 +18,6 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-012](./ADR-012-metricas-do-processor.md) | Métricas do processor no Compose |
 | [ADR-013](./ADR-013-aplica-status-no-registro.md) | A Video API aplica o status no registro |
 | [ADR-014](./ADR-014-listagem-no-redis.md) | A listagem sai do Redis |
+| [ADR-015](./ADR-015-download-do-zip.md) | O download entrega o ZIP do storage |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.
