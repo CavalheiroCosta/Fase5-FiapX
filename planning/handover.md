@@ -10,6 +10,7 @@ A próxima feature é a **Feature 2 — Monitoramento**. O upload do vídeo já 
 - Auth API em `src/Auth`. Login emite JWT HMAC por 30 minutos, com login e e-mail. O cadastro exige o token da conta `Adm`.
 - Video API em `src/Video`, nas quatro camadas. `POST /videos` exige o token. A ordem é MinIO, registro como aguardando no Postgres de vídeos, fila `processamento` com identificador e caminho. Se a fila falha, o vídeo continua pendente. As decisões estão em `docs/adrs/ADR-007-postgres-videos-no-compose.md`, `docs/adrs/ADR-008-video-le-jwt-local.md` e `docs/adrs/ADR-009-contrato-upload-e-fila.md`.
 - O Compose sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth, a Video API, o MinIO e o RabbitMQ.
+- A coleção em `Hacka/postman`, fora deste repositório, faz o login e o envio. O environment `Hacka-FiapX-Local` guarda `baseUrl` da Auth, `videoBaseUrl` da Video API e o `token`. O request `Enviar vídeo` usa o campo `arquivo` e grava `videoId` e `caminho`.
 
 ```powershell
 docker compose up -d

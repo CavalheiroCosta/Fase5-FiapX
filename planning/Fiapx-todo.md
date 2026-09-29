@@ -80,6 +80,7 @@ No local, o storage é o MinIO e a fila é o RabbitMQ, os dois no Compose. Dá p
 - [x] No console do MinIO, o arquivo enviado aparece.
 - [x] No painel do RabbitMQ, a mensagem aparece na fila de processamento.
 - [x] Testes unitários, com storage e fila atrás de interface, dentro da cobertura de 80%.
+- [x] A coleção do Postman envia o vídeo com o token gravado no login.
 
 Fora desta feature: consumir a fila, quebrar o vídeo, gerar o ZIP, fila de status, listagem, download e e-mail.
 
