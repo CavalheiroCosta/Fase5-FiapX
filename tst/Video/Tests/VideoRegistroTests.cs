@@ -32,4 +32,52 @@ public class VideoRegistroTests
 
         Assert.Equal(CodigosFalha.Validacao, resultado.Falha!.Codigo);
     }
+
+    [Fact]
+    public void Comecou_passa_para_em_processamento()
+    {
+        var video = VideoEnviado.Registrar(Guid.NewGuid(), "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+
+        Assert.Equal(EfeitoStatus.Alterado, video.Aplicar(MomentoStatus.Comecou, null));
+        Assert.Equal(StatusVideo.EmProcessamento, video.Status);
+        Assert.Null(video.CaminhoZip);
+        Assert.Equal(EfeitoStatus.Ignorado, video.Aplicar(MomentoStatus.Comecou, null));
+    }
+
+    [Fact]
+    public void Sucesso_fecha_mesmo_sem_comecou_e_grava_o_zip()
+    {
+        var video = VideoEnviado.Registrar(Guid.NewGuid(), "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+
+        Assert.Equal(EfeitoStatus.Alterado, video.Aplicar(MomentoStatus.Sucesso, " videos/id/id.zip "));
+
+        Assert.Equal(StatusVideo.Concluido, video.Status);
+        Assert.Equal("videos/id/id.zip", video.CaminhoZip);
+        Assert.Equal(EfeitoStatus.Ignorado, video.Aplicar(MomentoStatus.Erro, null));
+        Assert.Equal(StatusVideo.Concluido, video.Status);
+    }
+
+    [Fact]
+    public void Erro_fecha_mesmo_sem_comecou()
+    {
+        var video = VideoEnviado.Registrar(Guid.NewGuid(), "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+
+        Assert.Equal(EfeitoStatus.Alterado, video.Aplicar(MomentoStatus.Erro, "videos/id/id.zip"));
+
+        Assert.Equal(StatusVideo.Erro, video.Status);
+        Assert.Null(video.CaminhoZip);
+        Assert.Equal(EfeitoStatus.Ignorado, video.Aplicar(MomentoStatus.Sucesso, "videos/id/id.zip"));
+        Assert.Equal(StatusVideo.Erro, video.Status);
+        Assert.Null(video.CaminhoZip);
+    }
+
+    [Fact]
+    public void Sucesso_sem_caminho_nao_conclui()
+    {
+        var video = VideoEnviado.Registrar(Guid.NewGuid(), "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+
+        Assert.Equal(EfeitoStatus.Ignorado, video.Aplicar(MomentoStatus.Sucesso, " "));
+        Assert.Equal(StatusVideo.AguardandoProcessamento, video.Status);
+        Assert.Equal(EfeitoStatus.Ignorado, video.Aplicar("outro", null));
+    }
 }

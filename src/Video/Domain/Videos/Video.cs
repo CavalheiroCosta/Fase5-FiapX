@@ -22,6 +22,39 @@ public sealed class Video
 
     public string? CaminhoZip { get; private set; }
 
+    public EfeitoStatus Aplicar(string? momento, string? caminho)
+    {
+        if (Status is StatusVideo.Concluido or StatusVideo.Erro)
+            return EfeitoStatus.Ignorado;
+
+        if (momento == MomentoStatus.Comecou)
+        {
+            if (Status == StatusVideo.EmProcessamento)
+                return EfeitoStatus.Ignorado;
+
+            Status = StatusVideo.EmProcessamento;
+            return EfeitoStatus.Alterado;
+        }
+
+        if (momento == MomentoStatus.Sucesso)
+        {
+            if (string.IsNullOrWhiteSpace(caminho))
+                return EfeitoStatus.Ignorado;
+
+            Status = StatusVideo.Concluido;
+            CaminhoZip = caminho.Trim();
+            return EfeitoStatus.Alterado;
+        }
+
+        if (momento == MomentoStatus.Erro)
+        {
+            Status = StatusVideo.Erro;
+            return EfeitoStatus.Alterado;
+        }
+
+        return EfeitoStatus.Ignorado;
+    }
+
     public static Resultado<Video> Registrar(Guid id, string? login, string? email, string? caminho)
     {
         if (id == Guid.Empty)

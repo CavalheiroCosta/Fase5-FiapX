@@ -61,11 +61,23 @@ public static class DependencyInjection
         var nomeFila = configuration["Queue:Nome"];
         if (string.IsNullOrWhiteSpace(nomeFila))
             nomeFila = "processamento";
+        var status = configuration["Queue:Status"];
+        if (string.IsNullOrWhiteSpace(status))
+            status = "status";
 
         services.AddSingleton<IPublicadorFila>(_ => new PublicadorFilaRabbit(uriFila));
         services.AddSingleton(provedor => new FilaProcessamento(provedor.GetRequiredService<IPublicadorFila>(), nomeFila));
         services.AddSingleton<IFilaProcessamento>(provedor => provedor.GetRequiredService<FilaProcessamento>());
         services.AddSingleton<IPreparacaoExterna>(provedor => provedor.GetRequiredService<FilaProcessamento>());
+
+        services.AddSingleton(new OpcoesStatus(uriFila, status));
+        services.AddSingleton<Func<ISessaoStatus>>(servico =>
+        {
+            var escopos = servico.GetRequiredService<IServiceScopeFactory>();
+            var opcoes = servico.GetRequiredService<OpcoesStatus>();
+            return () => new SessaoStatus(new CanalStatusRabbit(opcoes), escopos);
+        });
+        services.AddHostedService<ConsumidorStatusHostedService>();
         return services;
     }
 }

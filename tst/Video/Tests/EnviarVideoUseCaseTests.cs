@@ -249,6 +249,12 @@ public class EnviarVideoUseCaseTests
             Videos.Add(video);
             return Task.CompletedTask;
         }
+
+        public Task<Video.Domain.Videos.Video?> ObterAsync(Guid id, CancellationToken cancellationToken) =>
+            Task.FromResult(Videos.FirstOrDefault(video => video.Id == id));
+
+        public Task AtualizarAsync(Video.Domain.Videos.Video video, CancellationToken cancellationToken) =>
+            Task.CompletedTask;
     }
 
     private sealed class FilaFalsa : IFilaProcessamento

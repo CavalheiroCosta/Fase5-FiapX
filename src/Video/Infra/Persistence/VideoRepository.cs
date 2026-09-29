@@ -14,4 +14,10 @@ public sealed class VideoRepository(VideoDbContext db) : IVideoRepository
         db.Videos.Add(video);
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    public Task<VideoEnviado?> ObterAsync(Guid id, CancellationToken cancellationToken) =>
+        db.Videos.FirstOrDefaultAsync(video => video.Id == id, cancellationToken);
+
+    public Task AtualizarAsync(VideoEnviado video, CancellationToken cancellationToken) =>
+        db.SaveChangesAsync(cancellationToken);
 }

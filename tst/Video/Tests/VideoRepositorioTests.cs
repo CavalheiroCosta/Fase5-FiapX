@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Video.Domain.Videos;
 using Video.Infra.Persistence;
 using VideoEnviado = Video.Domain.Videos.Video;
 
@@ -55,6 +56,25 @@ public class VideoRepositorioTests : IDisposable
         await memoria.AdicionarAsync(criado.Valor!, CancellationToken.None);
 
         Assert.Equal(criado.Valor!.Id, Assert.Single(memoria.Listar()).Id);
+        Assert.Equal(criado.Valor.Id, (await memoria.ObterAsync(criado.Valor.Id, CancellationToken.None))!.Id);
+        await memoria.AtualizarAsync(criado.Valor, CancellationToken.None);
+        Assert.Null(await memoria.ObterAsync(Guid.NewGuid(), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Atualiza_o_status_e_o_caminho_do_zip()
+    {
+        var id = Guid.NewGuid();
+        var criado = VideoEnviado.Registrar(id, "ana", "ana@email.com", "videos/x/aula.mp4");
+        await _repositorio.AdicionarAsync(criado.Valor!, CancellationToken.None);
+        var video = (await _repositorio.ObterAsync(id, CancellationToken.None))!;
+
+        Assert.Equal(EfeitoStatus.Alterado, video.Aplicar(MomentoStatus.Sucesso, $"videos/{id:D}/{id:D}.zip"));
+        await _repositorio.AtualizarAsync(video, CancellationToken.None);
+
+        var lido = await _db.Videos.AsNoTracking().SingleAsync();
+        Assert.Equal(StatusVideo.Concluido, lido.Status);
+        Assert.Equal($"videos/{id:D}/{id:D}.zip", lido.CaminhoZip);
     }
 
     [Fact]
