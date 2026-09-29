@@ -33,7 +33,7 @@ public class AplicarStatusTests
         var metricas = new MetricasVideo();
         var lista = new ListaFalsa();
         lista.Guardar("ana", [new ItemLista(id, StatusVideo.AguardandoProcessamento, null)]);
-        var caso = new AplicarStatusUseCase(repositorio, lista, metricas);
+        var caso = new AplicarStatusUseCase(repositorio, lista, new EmailFalso(), metricas);
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Comecou, null), CancellationToken.None));
         Assert.Equal(StatusVideo.EmProcessamento, video.Status);
@@ -67,7 +67,8 @@ public class AplicarStatusTests
             new ItemLista(erro, StatusVideo.AguardandoProcessamento, null),
             new ItemLista(sucesso, StatusVideo.AguardandoProcessamento, null)
         ]);
-        var caso = new AplicarStatusUseCase(repositorio, lista, new MetricasVideo());
+        var email = new EmailFalso();
+        var caso = new AplicarStatusUseCase(repositorio, lista, email, new MetricasVideo());
 
         await caso.ExecutarAsync(Corpo(erro, MomentoStatus.Erro, null), CancellationToken.None);
         await caso.ExecutarAsync(Corpo(sucesso, MomentoStatus.Sucesso, $"videos/{sucesso:D}/{sucesso:D}.zip"), CancellationToken.None);
@@ -80,6 +81,11 @@ public class AplicarStatusTests
         Assert.Null(lista.Itens("ana")!.Single(item => item.Id == erro).CaminhoZip);
         Assert.Equal(StatusVideo.Concluido, lista.Itens("ana")!.Single(item => item.Id == sucesso).Status);
         Assert.Equal($"videos/{sucesso:D}/{sucesso:D}.zip", lista.Itens("ana")!.Single(item => item.Id == sucesso).CaminhoZip);
+        var aviso = Assert.Single(email.Envios);
+        Assert.Equal("ana@email.com", aviso.Destinatario);
+        Assert.Equal(erro, aviso.Id);
+        Assert.Equal(AvisoErro.Assunto, aviso.Assunto);
+        Assert.Contains(erro.ToString("D"), aviso.Corpo);
     }
 
     [Fact]
@@ -89,7 +95,7 @@ public class AplicarStatusTests
         var repositorio = new RepositorioFalso();
         var video = global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
         repositorio.Guardar(video);
-        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), new MetricasVideo());
+        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), new EmailFalso(), new MetricasVideo());
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync("{"u8.ToArray(), CancellationToken.None));
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(Guid.NewGuid(), MomentoStatus.Comecou, null), CancellationToken.None));
@@ -105,7 +111,7 @@ public class AplicarStatusTests
         var id = Guid.NewGuid();
         var repositorio = new RepositorioFalso { FalhaAoAtualizar = true };
         repositorio.Guardar(global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!);
-        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), new MetricasVideo());
+        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), new EmailFalso(), new MetricasVideo());
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Comecou, null), CancellationToken.None));
 
@@ -123,7 +129,7 @@ public class AplicarStatusTests
         repositorio.Guardar(video);
         var lista = new ListaFalsa { Falhar = true };
         lista.Guardar("ana", [new ItemLista(id, StatusVideo.AguardandoProcessamento, null)]);
-        var caso = new AplicarStatusUseCase(repositorio, lista, new MetricasVideo());
+        var caso = new AplicarStatusUseCase(repositorio, lista, new EmailFalso(), new MetricasVideo());
 
         Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Comecou, null), CancellationToken.None));
         Assert.Equal(StatusVideo.EmProcessamento, video.Status);
@@ -131,6 +137,58 @@ public class AplicarStatusTests
         lista.Falhar = false;
         lista.Cancelar = true;
         Assert.Equal(Confirmacao.Recolocar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Erro_repetido_nao_envia_de_novo_e_falha_do_email_confirma()
+    {
+        var id = Guid.NewGuid();
+        var repositorio = new RepositorioFalso();
+        var video = global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+        repositorio.Guardar(video);
+        var email = new EmailFalso { Falhar = true };
+        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), email, new MetricasVideo());
+
+        Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None));
+        Assert.Equal(StatusVideo.Erro, video.Status);
+        Assert.Empty(email.Envios);
+
+        email.Falhar = false;
+        Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None));
+        Assert.Empty(email.Envios);
+        Assert.Equal(StatusVideo.Erro, video.Status);
+    }
+
+    [Fact]
+    public async Task Cancelamento_do_email_confirma_com_status_erro()
+    {
+        var id = Guid.NewGuid();
+        var repositorio = new RepositorioFalso();
+        var video = global::Video.Domain.Videos.Video.Registrar(id, "ana", "ana@email.com", "videos/x/a.mp4").Valor!;
+        repositorio.Guardar(video);
+        var email = new EmailFalso { Cancelar = true };
+        var caso = new AplicarStatusUseCase(repositorio, new ListaFalsa(), email, new MetricasVideo());
+
+        Assert.Equal(Confirmacao.Confirmar, await caso.ExecutarAsync(Corpo(id, MomentoStatus.Erro, null), CancellationToken.None));
+        Assert.Equal(StatusVideo.Erro, video.Status);
+        Assert.Empty(email.Envios);
+    }
+
+    [Fact]
+    public async Task Memoria_grava_o_aviso_e_smtp_exige_host()
+    {
+        var memoria = new Video.Infra.Email.EnviadorEmailMemoria();
+        var id = Guid.NewGuid();
+        await memoria.EnviarErroAsync("ana@email.com", id, CancellationToken.None);
+        var aviso = Assert.Single(memoria.Enviados);
+        Assert.Equal("ana@email.com", aviso.Destinatario);
+        Assert.Equal(AvisoErro.Assunto, aviso.Assunto);
+        Assert.Equal(AvisoErro.Corpo(id), aviso.Corpo);
+
+        Assert.Throws<ArgumentException>(() => new Video.Infra.Email.EnviadorEmailSmtp(" ", 1025, AvisoErro.RemetentePadrao));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Video.Infra.Email.EnviadorEmailSmtp("localhost", 0, AvisoErro.RemetentePadrao));
+        Assert.Throws<ArgumentException>(() => new Video.Infra.Email.EnviadorEmailSmtp("localhost", 1025, " "));
+        _ = new Video.Infra.Email.EnviadorEmailSmtp("localhost", 1025, AvisoErro.RemetentePadrao);
     }
 
     [Fact]
@@ -142,6 +200,7 @@ public class AplicarStatusTests
         var servicos = new ServiceCollection();
         servicos.AddSingleton<IVideoRepository>(repositorio);
         servicos.AddSingleton<IListaVideos>(new ListaFalsa());
+        servicos.AddSingleton<IEnviadorEmail>(new EmailFalso());
         servicos.AddSingleton<MetricasVideo>();
         servicos.AddScoped<AplicarStatusUseCase>();
         await using var provedor = servicos.BuildServiceProvider();
@@ -167,6 +226,7 @@ public class AplicarStatusTests
         var servicos = new ServiceCollection();
         servicos.AddSingleton<IVideoRepository>(repositorio);
         servicos.AddSingleton<IListaVideos>(new ListaFalsa());
+        servicos.AddSingleton<IEnviadorEmail>(new EmailFalso());
         servicos.AddSingleton<MetricasVideo>();
         servicos.AddScoped<AplicarStatusUseCase>();
         await using var provedor = servicos.BuildServiceProvider();
@@ -186,6 +246,7 @@ public class AplicarStatusTests
         var servicos = new ServiceCollection();
         servicos.AddSingleton<MetricasVideo>();
         servicos.AddSingleton<IListaVideos>(new ListaFalsa());
+        servicos.AddSingleton<IEnviadorEmail>(new EmailFalso());
         servicos.AddScoped<AplicarStatusUseCase>();
         servicos.AddSingleton<IVideoRepository>(new RepositorioFalso());
         await using var provedor = servicos.BuildServiceProvider();
@@ -326,6 +387,26 @@ public class AplicarStatusTests
                 throw new IOException("banco");
 
             Atualizacoes++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class EmailFalso : IEnviadorEmail
+    {
+        public List<(string Destinatario, Guid Id, string Assunto, string Corpo)> Envios { get; } = [];
+
+        public bool Falhar { get; set; }
+
+        public bool Cancelar { get; set; }
+
+        public Task EnviarErroAsync(string destinatario, Guid id, CancellationToken cancellationToken)
+        {
+            if (Cancelar)
+                throw new OperationCanceledException();
+            if (Falhar)
+                throw new IOException("smtp");
+
+            Envios.Add((destinatario, id, AvisoErro.Assunto, AvisoErro.Corpo(id)));
             return Task.CompletedTask;
         }
     }

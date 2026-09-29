@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Video.Domain.Tokens;
 using Video.Domain.Videos;
+using Video.Infra.Email;
 using Video.Infra.Filas;
 using Video.Infra.Persistence;
 using Video.Infra.Redis;
@@ -36,6 +37,8 @@ public static class DependencyInjection
             services.AddSingleton<IFilaProcessamento>(provedor => provedor.GetRequiredService<FilaProcessamentoMemoria>());
             services.AddSingleton<ListaVideosMemoria>();
             services.AddSingleton<IListaVideos>(provedor => provedor.GetRequiredService<ListaVideosMemoria>());
+            services.AddSingleton<EnviadorEmailMemoria>();
+            services.AddSingleton<IEnviadorEmail>(provedor => provedor.GetRequiredService<EnviadorEmailMemoria>());
             return services;
         }
 
@@ -86,6 +89,16 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Redis:Conexao não está configurada.");
         services.AddSingleton(_ => new ComandoListaRedis(redis));
         services.AddSingleton<IListaVideos>(provedor => new ListaVideos(provedor.GetRequiredService<ComandoListaRedis>()));
+
+        var emailHost = configuration["Email:Host"]
+            ?? throw new InvalidOperationException("Email:Host não está configurado.");
+        var emailPorta = configuration["Email:Port"]
+            ?? throw new InvalidOperationException("Email:Port não está configurada.");
+        if (!int.TryParse(emailPorta, out var porta) || porta <= 0)
+            throw new InvalidOperationException("Email:Port não está configurada.");
+        var remetente = configuration["Email:Remetente"]
+            ?? throw new InvalidOperationException("Email:Remetente não está configurado.");
+        services.AddSingleton<IEnviadorEmail>(_ => new EnviadorEmailSmtp(emailHost, porta, remetente));
         return services;
     }
 }

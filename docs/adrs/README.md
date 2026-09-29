@@ -19,5 +19,6 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-013](./ADR-013-aplica-status-no-registro.md) | A Video API aplica o status no registro |
 | [ADR-014](./ADR-014-listagem-no-redis.md) | A listagem sai do Redis |
 | [ADR-015](./ADR-015-download-do-zip.md) | O download entrega o ZIP do storage |
+| [ADR-016](./ADR-016-email-de-erro.md) | O e-mail de erro sai depois do status |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.

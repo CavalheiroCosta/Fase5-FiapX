@@ -8,15 +8,19 @@ public sealed class MetricasVideo : IDisposable
     public const string StatusAplicado = "fiapx_video_status";
     public const string Listagem = "fiapx_video_listagem";
     public const string Download = "fiapx_video_download";
+    public const string Email = "fiapx_video_email";
     public const string OrigemRedis = "redis";
     public const string OrigemPostgres = "postgres";
     public const string ResultadoEntregue = "entregue";
     public const string ResultadoRecusado = "recusado";
+    public const string ResultadoEnviado = "enviado";
+    public const string ResultadoFalhou = "falhou";
 
     private readonly Meter _medidor;
     private readonly Counter<long> _status;
     private readonly Counter<long> _listagem;
     private readonly Counter<long> _download;
+    private readonly Counter<long> _email;
 
     public MetricasVideo()
         : this(NomeMedidor)
@@ -29,6 +33,7 @@ public sealed class MetricasVideo : IDisposable
         _status = _medidor.CreateCounter<long>(StatusAplicado);
         _listagem = _medidor.CreateCounter<long>(Listagem);
         _download = _medidor.CreateCounter<long>(Download);
+        _email = _medidor.CreateCounter<long>(Email);
     }
 
     public void Registrar(string momento) =>
@@ -39,6 +44,9 @@ public sealed class MetricasVideo : IDisposable
 
     public void RegistrarDownload(string resultado) =>
         _download.Add(1, new KeyValuePair<string, object?>("resultado", resultado));
+
+    public void RegistrarEmail(string resultado) =>
+        _email.Add(1, new KeyValuePair<string, object?>("resultado", resultado));
 
     public void Dispose() => _medidor.Dispose();
 }

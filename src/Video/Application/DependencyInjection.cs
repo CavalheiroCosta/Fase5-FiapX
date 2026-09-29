@@ -16,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped(provedor => new AplicarStatusUseCase(
             provedor.GetRequiredService<IVideoRepository>(),
             provedor.GetRequiredService<IListaVideos>(),
+            provedor.GetRequiredService<IEnviadorEmail>(),
             provedor.GetRequiredService<MetricasVideo>()));
         services.AddScoped(provedor => new EnviarVideoUseCase(
             provedor.GetRequiredService<ILeitorToken>(),

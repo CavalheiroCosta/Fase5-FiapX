@@ -8,7 +8,11 @@ public enum Confirmacao
     Recolocar
 }
 
-public sealed class AplicarStatusUseCase(IVideoRepository repositorio, IListaVideos lista, MetricasVideo metricas)
+public sealed class AplicarStatusUseCase(
+    IVideoRepository repositorio,
+    IListaVideos lista,
+    IEnviadorEmail email,
+    MetricasVideo metricas)
 {
     public async Task<Confirmacao> ExecutarAsync(ReadOnlyMemory<byte> corpo, CancellationToken cancellationToken)
     {
@@ -32,6 +36,9 @@ public sealed class AplicarStatusUseCase(IVideoRepository repositorio, IListaVid
             if (efeito == EfeitoStatus.Alterado)
             {
                 await repositorio.AtualizarAsync(video, cancellationToken);
+                if (mensagem.Momento == MomentoStatus.Erro)
+                    await AvisarDonoAsync(video, cancellationToken);
+
                 try
                 {
                     await lista.AtualizarAsync(video.Login, ItemLista.De(video), cancellationToken);
@@ -54,6 +61,20 @@ public sealed class AplicarStatusUseCase(IVideoRepository repositorio, IListaVid
             _ = ex;
             metricas.Registrar(MomentoStatus.Ignorado);
             return Confirmacao.Confirmar;
+        }
+    }
+
+    private async Task AvisarDonoAsync(global::Video.Domain.Videos.Video video, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await email.EnviarErroAsync(video.Email, video.Id, cancellationToken);
+            metricas.RegistrarEmail(MetricasVideo.ResultadoEnviado);
+        }
+        catch (Exception ex)
+        {
+            _ = ex;
+            metricas.RegistrarEmail(MetricasVideo.ResultadoFalhou);
         }
     }
 }
