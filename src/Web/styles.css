@@ -134,6 +134,35 @@ input:focus {
   align-items: center;
 }
 
+.atalhos {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.atalhos li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #1e2329;
+  border: 1px solid #2b3139;
+  border-radius: 8px;
+}
+
+.atalhos span {
+  color: #929aa5;
+  font-size: 14px;
+}
+
+.atalhos code {
+  color: #fcd535;
+}
+
 .linha-titulo {
   justify-content: space-between;
 }
