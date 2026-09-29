@@ -25,10 +25,10 @@ sequenceDiagram
     Fila-->>Cliente: 201
 ```
 
-O host consome a fila `status` e grava `em_processamento`, `concluido` ou `erro` no Postgres. `GET /videos` exige o mesmo token e devolve a lista daquele login, lida do Redis. Sem token válido, a resposta é 401. `GET /` responde 404. `GET /metrics` responde o texto do Prometheus, inclusive `fiapx_video_status` e `fiapx_video_listagem`, e não exige token.
+O host consome a fila `status` e grava `em_processamento`, `concluido` ou `erro` no Postgres. `GET /videos` exige o mesmo token e devolve a lista daquele login, lida do Redis. `GET /videos/{id}/download` exige o token e devolve o ZIP quando o status é `concluido`. Sem token válido, a resposta é 401. Vídeo de outro login, inexistente ou ainda não concluído responde 404. `GET /` responde 404. `GET /metrics` responde o texto do Prometheus, inclusive `fiapx_video_status`, `fiapx_video_listagem` e `fiapx_video_download`, e não exige token.
 
 Este projeto referencia Application e Infra. As regras ficam no Domain. PostgreSQL, MinIO, RabbitMQ e Redis ficam na Infra. A chave local do token está em `appsettings.json` e é a mesma da Auth.
 
-O corte está em [`planning/planning.md`](../../../planning/planning.md). O envio está em [`docs/adrs/ADR-009-contrato-upload-e-fila.md`](../../../docs/adrs/ADR-009-contrato-upload-e-fila.md). O status está em [`docs/adrs/ADR-013-aplica-status-no-registro.md`](../../../docs/adrs/ADR-013-aplica-status-no-registro.md). A listagem está em [`docs/adrs/ADR-014-listagem-no-redis.md`](../../../docs/adrs/ADR-014-listagem-no-redis.md).
+O corte está em [`planning/planning.md`](../../../planning/planning.md). O envio está em [`docs/adrs/ADR-009-contrato-upload-e-fila.md`](../../../docs/adrs/ADR-009-contrato-upload-e-fila.md). O status está em [`docs/adrs/ADR-013-aplica-status-no-registro.md`](../../../docs/adrs/ADR-013-aplica-status-no-registro.md). A listagem está em [`docs/adrs/ADR-014-listagem-no-redis.md`](../../../docs/adrs/ADR-014-listagem-no-redis.md). O download está em [`docs/adrs/ADR-015-download-do-zip.md`](../../../docs/adrs/ADR-015-download-do-zip.md).
 
 A imagem em `Dockerfile` publica este projeto. O CI gera a tag local `fase5-video:ci` e não publica.

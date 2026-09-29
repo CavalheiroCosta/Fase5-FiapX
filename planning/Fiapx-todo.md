@@ -156,13 +156,13 @@ Fora desta feature: download e e-mail.
 
 A Video API entrega o ZIP quando o status é `concluido`. O arquivo sai do storage pela referência guardada no Postgres de vídeos. A listagem da Feature 5 já mostra esse caminho.
 
-- [ ] `GET /videos/{id}/download` exige o token.
-- [ ] Com status `concluido`, a resposta é o ZIP daquele vídeo.
-- [ ] Sem token válido, não há download.
-- [ ] Vídeo de outro login, vídeo inexistente ou status diferente de `concluido` não entrega o arquivo.
-- [ ] Testes unitários, com o storage atrás de interface, dentro da cobertura de 80%.
-- [ ] A coleção do Postman baixa o ZIP com o token gravado no login.
-- [ ] A métrica do download entra no mesmo Grafana.
+- [x] `GET /videos/{id}/download` exige o token.
+- [x] Com status `concluido`, a resposta é o ZIP daquele vídeo.
+- [x] Sem token válido, não há download.
+- [x] Vídeo de outro login, vídeo inexistente ou status diferente de `concluido` não entrega o arquivo.
+- [x] Testes unitários, com o storage atrás de interface, dentro da cobertura de 80%.
+- [x] A coleção do Postman baixa o ZIP com o token gravado no login.
+- [x] A métrica do download entra no mesmo Grafana.
 
 Fora desta feature: baixar o vídeo original e e-mail de erro.
 
