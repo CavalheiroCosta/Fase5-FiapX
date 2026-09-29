@@ -141,14 +141,14 @@ A listagem que o usuário vê sai do Redis. O PostgreSQL continua sendo o regist
 
 A Video API guarda, pelo login do token, a lista com identificador, status e, quando `concluido`, o caminho do ZIP. Ela atualiza essa entrada ao aceitar um vídeo e ao aplicar a fila `status`.
 
-- [ ] `GET /videos` exige o token e devolve só os vídeos daquele login.
-- [ ] A lista é lida do Redis.
-- [ ] Se o Redis não tiver a lista, a Video API lê o Postgres de vídeos e preenche o Redis de novo.
-- [ ] O envio e a aplicação de status passam a atualizar essa entrada.
-- [ ] Sem token válido, não há listagem.
-- [ ] Testes unitários, com o Redis atrás de interface, dentro da cobertura de 80%.
-- [ ] A coleção do Postman lista os vídeos com o token gravado no login.
-- [ ] A métrica da listagem entra no mesmo Grafana.
+- [x] `GET /videos` exige o token e devolve só os vídeos daquele login.
+- [x] A lista é lida do Redis.
+- [x] Se o Redis não tiver a lista, a Video API lê o Postgres de vídeos e preenche o Redis de novo.
+- [x] O envio e a aplicação de status passam a atualizar essa entrada.
+- [x] Sem token válido, não há listagem.
+- [x] Testes unitários, com o Redis atrás de interface, dentro da cobertura de 80%.
+- [x] A coleção do Postman lista os vídeos com o token gravado no login.
+- [x] A métrica da listagem entra no mesmo Grafana.
 
 Fora desta feature: download e e-mail.
 
