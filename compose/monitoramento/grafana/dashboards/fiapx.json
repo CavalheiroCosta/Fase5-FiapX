@@ -243,6 +243,20 @@
           "legendFormat": "{{resultado}}"
         }
       ]
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "Video — e-mail de erro",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 44 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (resultado) (fiapx_video_email_total{job=\"video\"})",
+          "legendFormat": "{{resultado}}"
+        }
+      ]
     }
   ]
 }

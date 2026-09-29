@@ -95,6 +95,9 @@ services:
       Queue__Nome: processamento
       Queue__Status: status
       Redis__Conexao: redis:6379,password=fiapx
+      Email__Host: mailpit
+      Email__Port: "1025"
+      Email__Remetente: fiapx@fiapx.local
       Token__Chave: fiapx-auth-chave-local-desenvolvimento
       Upload__LimiteBytes: "209715200"
     depends_on:
@@ -106,6 +109,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailpit:
+        condition: service_healthy
 
   redis:
     image: redis:7-alpine
@@ -116,6 +121,17 @@ services:
       - fiapx_redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "fiapx", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:v1.31.2
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
       interval: 5s
       timeout: 5s
       retries: 10
