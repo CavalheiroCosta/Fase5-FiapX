@@ -124,14 +124,14 @@ A Video API consome a fila `status` e atualiza o Postgres de vídeos. O processo
 
 Os status gravados seguem o valor que já existe no envio: `em_processamento`, `concluido` e `erro`, ao lado de `aguardando_processamento`.
 
-- [ ] `comecou` passa o vídeo para `em_processamento`.
-- [ ] `sucesso` passa para `concluido` e grava a referência do ZIP.
-- [ ] `erro` passa para `erro`.
-- [ ] `sucesso` e `erro` fecham o vídeo mesmo se o `comecou` não tiver sido aplicado.
-- [ ] A mesma mensagem, entregue de novo, não reabre um vídeo já `concluido` ou `erro`.
-- [ ] No banco `fiapx_videos`, o status muda. No sucesso, a referência do ZIP deixa de ser nula. A fila `status` esvazia.
-- [ ] Testes unitários, com a fila atrás de interface, dentro da cobertura de 80%.
-- [ ] A métrica desse consumo entra no mesmo Grafana.
+- [x] `comecou` passa o vídeo para `em_processamento`.
+- [x] `sucesso` passa para `concluido` e grava a referência do ZIP.
+- [x] `erro` passa para `erro`.
+- [x] `sucesso` e `erro` fecham o vídeo mesmo se o `comecou` não tiver sido aplicado.
+- [x] A mesma mensagem, entregue de novo, não reabre um vídeo já `concluido` ou `erro`.
+- [x] No banco `fiapx_videos`, o status muda. No sucesso, a referência do ZIP deixa de ser nula. A fila `status` esvazia.
+- [x] Testes unitários, com a fila atrás de interface, dentro da cobertura de 80%.
+- [x] A métrica desse consumo entra no mesmo Grafana.
 
 Fora desta feature: Redis de listagem, endpoint de listagem, download e e-mail.
 
