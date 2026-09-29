@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X — Arquitetura</title>
+    <link rel="stylesheet" href="css/guia.css" />
+  </head>
+  <body>
+    <aside class="menu">
+      <p class="marca">FIAP X</p>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="arquitetura.html" aria-current="page">Arquitetura</a>
+        <a href="dominio.html">Domínio</a>
+        <a href="nuvem.html">Nuvem</a>
+        <a href="tecnologias.html">Tecnologias</a>
+        <a href="executar.html">Como executar</a>
+      </nav>
+      <p class="atalho">← e → trocam a página.</p>
+    </aside>
+
+    <main class="conteudo">
+      <p class="kicker">Arquitetura do sistema</p>
+      <h1>O que sobe no Compose</h1>
+      <p class="lede">
+        O front fala com a Auth e com a Video API. O binário fica no MinIO. As filas carregam referência e resultado.
+        Dois processors consomem a mesma fila. A Video API é a dona do registro.
+      </p>
+
+      <figure class="mapa">
+        <svg class="desenho" viewBox="0 0 1080 580" role="img" aria-labelledby="titulo-desenho">
+          <title id="titulo-desenho">Ambiente local do FIAP X no Docker Compose</title>
+          <defs>
+            <marker id="ponta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#707a8a" />
+            </marker>
+            <marker id="ponta-volta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#fcd535" />
+            </marker>
+          </defs>
+
+          <g class="borda">
+            <rect x="400" y="16" width="220" height="64" rx="8" />
+            <text class="titulo" x="416" y="42">Front</text>
+            <text class="sub" x="416" y="62">localhost:5173</text>
+          </g>
+
+          <g class="app">
+            <rect x="40" y="128" width="220" height="72" rx="8" />
+            <text class="titulo" x="56" y="156">Auth API</text>
+            <text class="sub" x="56" y="178">localhost:5298 · JWT HMAC</text>
+          </g>
+          <g class="app">
+            <rect x="400" y="128" width="240" height="72" rx="8" />
+            <text class="titulo" x="416" y="156">Video API</text>
+            <text class="sub" x="416" y="178">localhost:5299 · dona do registro</text>
+          </g>
+          <g class="dado">
+            <rect x="820" y="128" width="220" height="72" rx="8" />
+            <text class="titulo" x="836" y="156">MinIO</text>
+            <text class="sub" x="836" y="178">bucket videos · API S3</text>
+          </g>
+
+          <g class="dado">
+            <rect x="40" y="248" width="220" height="60" rx="8" />
+            <text class="titulo" x="56" y="274">Postgres usuários</text>
+            <text class="sub" x="56" y="292">fiapx_usuarios · :5432</text>
+          </g>
+          <g class="fila">
+            <rect x="400" y="246" width="240" height="64" rx="8" />
+            <text class="titulo" x="416" y="272">fila processamento</text>
+            <text class="sub" x="416" y="292">id e caminho</text>
+          </g>
+          <g class="app">
+            <rect x="820" y="232" width="220" height="52" rx="8" />
+            <text class="titulo" x="836" y="254">Processor</text>
+            <text class="sub" x="836" y="272">localhost:5300</text>
+          </g>
+          <g class="app">
+            <rect x="820" y="296" width="220" height="52" rx="8" />
+            <text class="titulo" x="836" y="318">Processor</text>
+            <text class="sub" x="836" y="336">localhost:5301</text>
+          </g>
+
+          <g class="fila">
+            <rect x="400" y="360" width="240" height="64" rx="8" />
+            <text class="titulo" x="416" y="386">fila status</text>
+            <text class="sub" x="416" y="406">comecou, sucesso ou erro</text>
+          </g>
+
+          <g class="dado">
+            <rect x="40" y="480" width="200" height="64" rx="8" />
+            <text class="titulo" x="56" y="506">Postgres vídeos</text>
+            <text class="sub" x="56" y="526">fiapx_videos · :5433</text>
+          </g>
+          <g class="dado">
+            <rect x="260" y="480" width="200" height="64" rx="8" />
+            <text class="titulo" x="276" y="506">Redis</text>
+            <text class="sub" x="276" y="526">lista e marca · :6379</text>
+          </g>
+          <g class="dado">
+            <rect x="480" y="480" width="180" height="64" rx="8" />
+            <text class="titulo" x="496" y="506">Mailpit</text>
+            <text class="sub" x="496" y="526">painel :8025</text>
+          </g>
+          <g class="obs">
+            <rect x="700" y="480" width="170" height="64" rx="8" />
+            <text class="titulo" x="716" y="506">Prometheus</text>
+            <text class="sub" x="716" y="526">:9090 /targets</text>
+          </g>
+          <g class="obs">
+            <rect x="890" y="480" width="150" height="64" rx="8" />
+            <text class="titulo" x="906" y="506">Grafana</text>
+            <text class="sub" x="906" y="526">dashboard FIAP X</text>
+          </g>
+
+          <path class="fluxo" marker-end="url(#ponta)" d="M 470 80 C 470 112, 150 100, 150 128" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 530 80 L 520 128" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 150 200 L 150 248" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 640 164 L 820 164" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 520 200 L 520 246" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 640 270 L 820 258" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 640 286 L 820 322" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 930 232 L 930 200" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 820 348 C 760 390, 700 392, 640 392" />
+          <path class="volta" marker-end="url(#ponta-volta)" d="M 388 360 L 388 164 L 400 164" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 480 424 L 480 456 L 140 456 L 140 480" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 360 456 L 360 480" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 560 456 L 560 480" />
+          <path class="fluxo" marker-end="url(#ponta)" d="M 870 512 L 890 512" />
+
+          <text class="rotulo" x="250" y="104">login</text>
+          <text class="rotulo" x="536" y="108">token</text>
+          <text class="rotulo" x="648" y="156">original</text>
+          <text class="rotulo" x="936" y="222">ZIP</text>
+          <text class="rotulo" x="668" y="372">resultado</text>
+          <text class="rotulo" x="300" y="158">aplica</text>
+        </svg>
+        <figcaption class="legenda">
+          <span><i></i>Serviço .NET</span>
+          <span class="fila"><i></i>Fila</span>
+          <span class="dado"><i></i>Dado ou arquivo</span>
+          <span class="obs"><i></i>Observabilidade</span>
+        </figcaption>
+      </figure>
+      <p class="nota">
+        A seta tracejada é a Video API consumindo a fila <code>status</code>. O processor não escreve no Postgres.
+        O Redis guarda <code>marca:{id}</code> enquanto o trabalho dura e <code>lista:{login}</code> para a listagem.
+        Prometheus raspa <code>GET /metrics</code> sem token. O Grafana lê o Prometheus.
+      </p>
+
+      <h2>Serviços</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Serviço</th>
+            <th>Descrição</th>
+            <th>Onde olhar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Front</td>
+            <td>Tela em que a pessoa entra, cadastra usuários, envia o vídeo, acompanha o andamento e baixa o ZIP.</td>
+            <td><code>localhost:5173</code></td>
+          </tr>
+          <tr>
+            <td>Auth API</td>
+            <td>Reconhece quem pode usar o sistema e emite o token de acesso. Não processa vídeo.</td>
+            <td><code>localhost:5298</code></td>
+          </tr>
+          <tr>
+            <td>Video API</td>
+            <td>Recebe o vídeo, acompanha o status, lista os envios daquele login, entrega o ZIP e avisa o dono quando o processamento falha.</td>
+            <td><code>localhost:5299</code></td>
+          </tr>
+          <tr>
+            <td>Processor</td>
+            <td>Lê o vídeo, extrai um frame por segundo, gera o ZIP e devolve o resultado. Não atende o usuário.</td>
+            <td><code>localhost:5300</code> e <code>localhost:5301</code></td>
+          </tr>
+          <tr>
+            <td>Postgres usuários</td>
+            <td>Guarda o cadastro de quem usa o sistema: login, nome, e-mail e a senha protegida.</td>
+            <td><code>localhost:5432</code>, banco <code>fiapx_usuarios</code>, usuário <code>fiapx</code>, senha <code>fiapx</code></td>
+          </tr>
+          <tr>
+            <td>Postgres vídeos</td>
+            <td>Guarda o registro de cada vídeo: dono, status e a referência dos arquivos. O binário não fica aqui.</td>
+            <td><code>localhost:5433</code>, banco <code>fiapx_videos</code>, usuário <code>fiapx</code>, senha <code>fiapx</code></td>
+          </tr>
+          <tr>
+            <td>MinIO</td>
+            <td>Serviço responsável por manter os arquivos dos vídeos enviados e o ZIP gerado após o processamento.</td>
+            <td>API <code>localhost:9000</code>, console <code>localhost:9001</code>, usuário <code>fiapx</code>, senha <code>fiapxfiapx</code></td>
+          </tr>
+          <tr>
+            <td>RabbitMQ</td>
+            <td>Leva o pedido de processamento e o resultado de volta. A mensagem traz a referência, não o arquivo.</td>
+            <td>painel <code>localhost:15672</code>, usuário <code>fiapx</code>, senha <code>fiapx</code></td>
+          </tr>
+          <tr>
+            <td>Redis</td>
+            <td>Guarda a listagem que o usuário vê e a marca que impede o mesmo vídeo em dois processors ao mesmo tempo.</td>
+            <td><code>localhost:6379</code>, senha <code>fiapx</code></td>
+          </tr>
+          <tr>
+            <td>Mailpit</td>
+            <td>Recebe o e-mail de aviso quando um vídeo falha. No ambiente local a mensagem não sai da máquina.</td>
+            <td>painel <code>localhost:8025</code></td>
+          </tr>
+          <tr>
+            <td>Prometheus</td>
+            <td>Coleta as métricas das APIs, dos bancos, da fila, do storage e do Redis.</td>
+            <td><code>localhost:9090/targets</code></td>
+          </tr>
+          <tr>
+            <td>Grafana</td>
+            <td>Mostra, num painel só, o que o Prometheus coletou.</td>
+            <td><code>localhost:3000</code>, usuário <code>fiapx</code>, senha <code>fiapx</code>, dashboard <code>FIAP X</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Um vídeo, do envio ao ZIP</h2>
+      <ol class="passos">
+        <li><p>O front pede login à Auth. A senha certa devolve um token de 30 minutos. Sem token válido não há envio, lista nem download.</p></li>
+        <li><p>A Video API grava o arquivo no MinIO, registra o vídeo como aguardando no Postgres e só então publica o identificador e o caminho na fila.</p></li>
+        <li><p>Se a fila falha, o vídeo continua pendente. Se o storage falha, não nasce registro. Se o registro falha depois do arquivo, a API apaga o objeto.</p></li>
+        <li><p>Um processor marca o vídeo no Redis. Se a marca já existe, confirma a mensagem e não processa de novo.</p></li>
+        <li><p>Avisa que começou, extrai um frame por segundo e grava o ZIP. Sucesso só sai com o ZIP já salvo. Erro confirma a mensagem e não volta para a fila.</p></li>
+        <li><p>A Video API grava em processamento, concluído ou erro. Vídeo já fechado não reabre. A listagem sai do Redis. No concluído, o download entrega o ZIP. No erro, o e-mail sai depois do status gravado.</p></li>
+      </ol>
+
+      <div class="status" aria-label="Status do vídeo">
+        <span><code>aguardando_processamento</code></span>
+        <span>→</span>
+        <span><code>em_processamento</code></span>
+        <span>→</span>
+        <span class="fecha"><code>concluido</code> · download</span>
+        <span>ou</span>
+        <span class="falha"><code>erro</code> · e-mail</span>
+      </div>
+
+      <nav class="pager">
+        <a href="index.html">← Início</a>
+        <a href="dominio.html">Domínio →</a>
+      </nav>
+    </main>
+    <script src="js/guia.js"></script>
+  </body>
+</html>

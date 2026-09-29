@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X — Nuvem</title>
+    <link rel="stylesheet" href="css/guia.css" />
+  </head>
+  <body>
+    <aside class="menu">
+      <p class="marca">FIAP X</p>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="arquitetura.html">Arquitetura</a>
+        <a href="dominio.html">Domínio</a>
+        <a href="nuvem.html" aria-current="page">Nuvem</a>
+        <a href="tecnologias.html">Tecnologias</a>
+        <a href="executar.html">Como executar</a>
+      </nav>
+      <p class="atalho">← e → trocam a página.</p>
+    </aside>
+
+    <main class="conteudo">
+      <p class="kicker">Arquitetura de nuvem indicada</p>
+      <h1>O mesmo fluxo, na AWS</h1>
+      <p class="lede">
+        Os serviços .NET sobem no EKS. A borda é API Gateway mais um balanceador.
+        A fila continua RabbitMQ, num serviço ECS separado do deploy das APIs.
+        Cada contexto tem o próprio Postgres.
+      </p>
+
+      <div class="placa" role="img" aria-label="Arquitetura AWS: API Gateway, ALB, EKS, RabbitMQ no ECS, dois RDS, Redis, S3 e SES">
+        <section class="zona">
+          <h2 class="zona-nome">Borda</h2>
+          <div class="trilha">
+            <div class="bloco">
+              <strong>Cliente</strong>
+              <span>browser</span>
+            </div>
+            <span class="elo" aria-hidden="true">→</span>
+            <div class="bloco">
+              <strong>API Gateway</strong>
+              <span>HTTPS · / · /auth · /video</span>
+            </div>
+            <span class="elo" aria-hidden="true">→</span>
+            <div class="bloco">
+              <strong>ALB</strong>
+              <span>interno · várias AZs</span>
+            </div>
+          </div>
+        </section>
+        <p class="desce">VPC Link do gateway até o balanceador. O ALB entrega no Ingress do cluster.</p>
+
+        <section class="zona">
+          <h2 class="zona-nome">EKS</h2>
+          <div class="cerca">
+            <p>Cluster privado · namespace fiapx · nodes em mais de uma zona</p>
+            <div class="pods">
+              <div class="bloco app">
+                <strong>Front</strong>
+                <span>Deployment</span>
+              </div>
+              <div class="bloco app">
+                <strong>Auth API</strong>
+                <span>HPA por CPU</span>
+              </div>
+              <div class="bloco app">
+                <strong>Video API</strong>
+                <span>HPA por CPU</span>
+              </div>
+              <div class="bloco app">
+                <strong>Processor</strong>
+                <span>HPA pela fila · mín. 2</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <p class="desce">A Video publica em processamento. O processor publica em status. O deploy dos pods não reinicia o broker.</p>
+
+        <section class="zona">
+          <h2 class="zona-nome">Fila</h2>
+          <div class="cerca ecs">
+            <p>ECS · RabbitMQ em cluster · fora do EKS · filas duráveis</p>
+            <div class="pods">
+              <div class="bloco fila">
+                <strong>processamento</strong>
+                <span>id e caminho</span>
+              </div>
+              <div class="bloco fila">
+                <strong>status</strong>
+                <span>comecou, sucesso ou erro</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <p class="desce">Auth só alcança o RDS de usuários. Video alcança o RDS de vídeos, o Redis, o S3 e o SES. Processor alcança o S3 e o Redis.</p>
+
+        <section class="zona">
+          <h2 class="zona-nome">Dados</h2>
+          <div class="dados">
+            <div class="bloco dado">
+              <strong>RDS usuários</strong>
+              <span>Multi-AZ · fiapx_usuarios</span>
+            </div>
+            <div class="bloco dado">
+              <strong>RDS vídeos</strong>
+              <span>Multi-AZ · fiapx_videos</span>
+            </div>
+            <div class="bloco dado">
+              <strong>ElastiCache</strong>
+              <span>lista e marca</span>
+            </div>
+            <div class="bloco dado">
+              <strong>S3 videos</strong>
+              <span>original e ZIP</span>
+            </div>
+            <div class="bloco dado">
+              <strong>SES</strong>
+              <span>e-mail de erro</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="zona">
+          <h2 class="zona-nome">Ops</h2>
+          <div class="trilha">
+            <div class="bloco obs">
+              <strong>Prometheus</strong>
+              <span>raspa /metrics dos pods</span>
+            </div>
+            <span class="elo" aria-hidden="true">→</span>
+            <div class="bloco obs">
+              <strong>Grafana</strong>
+              <span>dashboard FIAP X</span>
+            </div>
+            <div class="bloco obs">
+              <strong>ECR</strong>
+              <span>imagem com o SHA do commit</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <h2>Por que escala</h2>
+      <div class="porque">
+        <article>
+          <h3>Gateway e balanceador</h3>
+          <p>O API Gateway é a porta pública: TLS, rota e limite de taxa. O VPC Link entrega num ALB interno, que reparte o tráfego entre as zonas. O pod não recebe conexão da internet.</p>
+        </article>
+        <article>
+          <h3>EKS para os serviços</h3>
+          <p>Auth e Video crescem por CPU, cada um no seu Deployment. O processor cresce pelo tamanho da fila <code>processamento</code>, com no mínimo dois pods. Um rollout troca a imagem sem derrubar o outro serviço.</p>
+        </article>
+        <article>
+          <h3>Fila no ECS</h3>
+          <p>O RabbitMQ fica num serviço ECS, em cluster, com as mesmas filas duráveis. O cliente AMQP não muda. O deploy das APIs no EKS não reinicia o broker. Quem escala com o pico de vídeo é o processor, não a fila.</p>
+        </article>
+        <article>
+          <h3>Dois Postgres</h3>
+          <p>Duas instâncias RDS Multi-AZ. A Auth só escreve em <code>fiapx_usuarios</code>. A Video só escreve em <code>fiapx_videos</code>. O pico de frames não disputa CPU com o login, e a queda de uma instância não leva a outra.</p>
+        </article>
+      </div>
+
+      <h2>Uma instância, dois bancos</h2>
+      <p class="nota">
+        Na Fase 4 o corte foi um RDS só, com banco (ou schema) e role por serviço. O dado continua isolado: ninguém lê a tabela do outro.
+        O limite é o host. Pico ou falha atingem os dois contextos juntos. Cabe quando o custo manda.
+        O desenho desta página separa a instância porque os dois contextos já não compartilham processo nem disco no Compose, e crescem em ritmos diferentes.
+      </p>
+
+      <h2>Do Compose para a nuvem</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Papel</th>
+            <th>Local</th>
+            <th>Nuvem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Entrada</td>
+            <td>Vite na porta 5173</td>
+            <td>API Gateway e ALB interno. O browser não fala com o Postgres.</td>
+          </tr>
+          <tr>
+            <td>Front, Auth, Video, Processor</td>
+            <td>containers do Compose</td>
+            <td>Deployments no EKS. Imagem no ECR. Processor com no mínimo dois pods.</td>
+          </tr>
+          <tr>
+            <td>Filas</td>
+            <td>RabbitMQ</td>
+            <td>RabbitMQ no ECS. Filas <code>processamento</code> e <code>status</code>, mesmo JSON.</td>
+          </tr>
+          <tr>
+            <td>Usuários e vídeos</td>
+            <td>dois Postgres 16</td>
+            <td>Dois RDS Multi-AZ. O schema ainda nasce na subida do serviço.</td>
+          </tr>
+          <tr>
+            <td>Storage</td>
+            <td>MinIO</td>
+            <td>S3, bucket <code>videos</code>. Mesmas chaves. Acesso por endpoint, sem internet pública.</td>
+          </tr>
+          <tr>
+            <td>Listagem e marca</td>
+            <td>Redis 7</td>
+            <td>ElastiCache. <code>lista:{login}</code> e <code>marca:{id}</code>. O Postgres continua o registro.</td>
+          </tr>
+          <tr>
+            <td>E-mail de erro</td>
+            <td>Mailpit</td>
+            <td>SES. O envio continua depois do status <code>erro</code>.</td>
+          </tr>
+          <tr>
+            <td>Métricas</td>
+            <td>Prometheus e Grafana</td>
+            <td>Managed Prometheus e Managed Grafana. O dashboard <code>FIAP X</code> permanece.</td>
+          </tr>
+          <tr>
+            <td>Segredo</td>
+            <td>variável do Compose</td>
+            <td>Secrets Manager. S3 e SES por IRSA. A chave HMAC é a mesma na Auth e na Video.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>O que permanece</h2>
+      <ul>
+        <li>Quem publica <code>processamento</code> é a Video API. Quem publica <code>status</code> é o processor. Quem grava o status no banco é a Video API.</li>
+        <li>A mensagem não carrega o binário.</li>
+        <li>Vários processors competem pela mesma fila. A marca no Redis impede o mesmo vídeo nos dois.</li>
+        <li>RDS, ElastiCache, nós do EKS e o serviço ECS da fila ficam em sub-rede privada.</li>
+      </ul>
+
+      <nav class="pager">
+        <a href="dominio.html">← Domínio</a>
+        <a href="tecnologias.html">Tecnologias →</a>
+      </nav>
+    </main>
+    <script src="js/guia.js"></script>
+  </body>
+</html>
