@@ -1,15 +1,27 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection;
+using Processor.Domain.Processamento;
+using Processor.Infra.Storage;
 using Processor.Tests.Suporte;
 
 namespace Processor.Tests;
 
 public class ProcessorHostTests : IClassFixture<ProcessorApiFactory>
 {
+    private readonly ProcessorApiFactory _factory;
     private readonly HttpClient _client;
 
     public ProcessorHostTests(ProcessorApiFactory factory)
     {
+        _factory = factory;
         _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public void Host_de_teste_fica_em_memoria()
+    {
+        Assert.IsType<ArmazenamentoProcessamentoMemoria>(
+            _factory.Services.GetRequiredService<IArmazenamentoProcessamento>());
     }
 
     [Fact]
