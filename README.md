@@ -9,20 +9,29 @@ O desenho do sistema está em [`planning/planning.md`](planning/planning.md). A 
 | Serviço | Estado | Guia |
 | --- | --- | --- |
 | Auth API | Login emite JWT HMAC. O cadastro exige o token da conta `Adm`. | [`planning/auth.md`](planning/auth.md) |
-| Video API | Ainda não existe neste repositório. | [`planning/planning.md`](planning/planning.md) |
+| Video API | `POST /videos` grava no MinIO, registra como aguardando e publica a referência. | [`planning/planning.md`](planning/planning.md) |
 | Video Processor API | Ainda não existe neste repositório. | [`planning/planning.md`](planning/planning.md) |
 
-A Auth usa as camadas Api, Application, Domain e Infra, em `src/Auth`. Cada projeto tem o próprio `README.md`.
+A Auth e a Video usam as camadas Api, Application, Domain e Infra, em `src/Auth` e `src/Video`. Cada projeto tem o próprio `README.md`.
 
 ## Ambiente local
 
-O Compose na raiz sobe o PostgreSQL de usuários e a Auth API:
+O Compose na raiz sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o MinIO e o RabbitMQ:
 
 ```powershell
 docker compose up -d
 ```
 
-A Auth fica em `http://localhost:5298` e grava no banco `fiapx_usuarios`. Banco de vídeos, Redis, RabbitMQ, MinIO, Prometheus e Grafana entram depois. Fora do Compose, em desenvolvimento, a Auth grava em `localhost:5432`.
+| Serviço | Onde olhar |
+| --- | --- |
+| Auth API | `http://localhost:5298` — banco `fiapx_usuarios` |
+| Video API | `http://localhost:5299` — banco `fiapx_videos` em `localhost:5433` |
+| MinIO | API `http://localhost:9000`, console `http://localhost:9001` (usuário `fiapx`, senha `fiapxfiapx`) |
+| RabbitMQ | AMQP `localhost:5672`, painel `http://localhost:15672` (usuário `fiapx`, senha `fiapx`) |
+
+Fora do Compose, em desenvolvimento, a Auth grava em `localhost:5432` e a Video API aponta para essas mesmas portas do host.
+
+O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. Redis, Prometheus e Grafana entram depois.
 
 ## Testes
 
@@ -30,6 +39,7 @@ Na raiz do repositório:
 
 ```powershell
 dotnet test tst/Auth/Tests/Auth.Tests.csproj
+dotnet test tst/Video/Tests/Video.Tests.csproj
 ```
 
-A cobertura de linhas da Auth fica em pelo menos 80%. O workflow em `.github/workflows/ci.yml` restaura, compila em Release, roda esses testes em OpenCover, espera o quality gate do SonarCloud e compila a imagem local `fase5-auth:ci`. A imagem não é publicada.
+A cobertura de linhas da Auth e a da Video ficam em pelo menos 80%. O workflow em `.github/workflows/ci.yml` restaura, compila em Release, roda esses testes em OpenCover, espera o quality gate do SonarCloud e compila as imagens locais `fase5-auth:ci` e `fase5-video:ci`. As imagens não são publicadas.

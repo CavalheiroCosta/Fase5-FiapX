@@ -59,7 +59,7 @@ A conta administradora é login `Adm`, senha `Adm`, nome `Administrador` e e-mai
 
 ## Features
 
-A ordem é esta. Processor, fila de status, listagem, download, e-mail de erro, Redis, publicação da imagem e deploy ficam para as features seguintes.
+A ordem é esta. O preparo da próxima feature está em `planning/handover.md`. Processor, fila de status, listagem, download, e-mail de erro, Redis, publicação da imagem e deploy ficam para as features seguintes.
 
 ### Feature 1 — Upload do vídeo
 
@@ -72,14 +72,14 @@ No local, o storage é o MinIO e a fila é o RabbitMQ, os dois no Compose. Dá p
 - O console do MinIO mostra o arquivo enviado. A API do storage continua sendo a do S3.
 - O painel do RabbitMQ mostra a mensagem na fila de processamento. A mensagem traz o identificador e o caminho.
 
-- [ ] A Video API recebe o vídeo com o token.
-- [ ] Grava o arquivo no MinIO.
-- [ ] Registra o vídeo no Postgres de vídeos como aguardando, antes de publicar.
-- [ ] Publica na fila de processamento o identificador e o caminho.
-- [ ] O Compose sobe MinIO e RabbitMQ com esta feature.
-- [ ] No console do MinIO, o arquivo enviado aparece.
-- [ ] No painel do RabbitMQ, a mensagem aparece na fila de processamento.
-- [ ] Testes unitários, com storage e fila atrás de interface, dentro da cobertura de 80%.
+- [x] A Video API recebe o vídeo com o token.
+- [x] Grava o arquivo no MinIO.
+- [x] Registra o vídeo no Postgres de vídeos como aguardando, antes de publicar.
+- [x] Publica na fila de processamento o identificador e o caminho.
+- [x] O Compose sobe MinIO e RabbitMQ com esta feature.
+- [x] No console do MinIO, o arquivo enviado aparece.
+- [x] No painel do RabbitMQ, a mensagem aparece na fila de processamento.
+- [x] Testes unitários, com storage e fila atrás de interface, dentro da cobertura de 80%.
 
 Fora desta feature: consumir a fila, quebrar o vídeo, gerar o ZIP, fila de status, listagem, download e e-mail.
 
