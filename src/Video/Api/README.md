@@ -25,7 +25,7 @@ sequenceDiagram
     Fila-->>Cliente: 201
 ```
 
-`GET /` responde 404.
+`GET /` responde 404. `GET /metrics` responde o texto do Prometheus e não exige token.
 
 Este projeto referencia Application e Infra. As regras ficam no Domain. PostgreSQL, MinIO e RabbitMQ ficam na Infra. A chave local do token está em `appsettings.json` e é a mesma da Auth.
 

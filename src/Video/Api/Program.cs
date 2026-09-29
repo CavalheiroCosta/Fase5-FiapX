@@ -1,3 +1,4 @@
+using OpenTelemetry.Metrics;
 using Video.Api;
 using Video.Application;
 using Video.Infra;
@@ -14,10 +15,15 @@ builder.Services.AddControllers();
 builder.Services.AddApplication(limite);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHostedService<PrepararVideoHostedService>();
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metricas => metricas
+        .AddAspNetCoreInstrumentation()
+        .AddPrometheusExporter());
 
 var app = builder.Build();
 
 app.MapControllers();
+app.MapPrometheusScrapingEndpoint();
 
 await app.RunAsync();
 

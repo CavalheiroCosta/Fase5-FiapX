@@ -59,7 +59,7 @@ A conta administradora é login `Adm`, senha `Adm`, nome `Administrador` e e-mai
 
 ## Features
 
-A ordem é esta. O preparo da próxima feature está em `planning/handover.md`. Processor, fila de status, listagem, download, e-mail de erro, Redis, publicação da imagem e deploy ficam para as features seguintes.
+A ordem é esta. O preparo da próxima feature está em `planning/handover.md`. Publicação da imagem e deploy ficam depois da Feature 7.
 
 ### Feature 1 — Upload do vídeo
 
@@ -90,7 +90,93 @@ Prometheus e Grafana entram no mesmo Compose e passam a mostrar o que já existe
 
 Cada feature nova acrescenta métrica nesse mesmo Grafana. O monitoramento não recomeça.
 
-- [ ] Prometheus e Grafana sobem no Compose.
-- [ ] Auth API e Video API expõem métricas.
-- [ ] O Grafana mostra API, banco, storage e fila do que esta entrega já tem.
-- [ ] A feature seguinte encaixa a métrica dela nesse painel, sem outro stack de monitoria.
+- [x] Prometheus e Grafana sobem no Compose.
+- [x] Auth API e Video API expõem métricas.
+- [x] O Grafana mostra API, banco, storage e fila do que esta entrega já tem.
+- [x] A feature seguinte encaixa a métrica dela nesse painel, sem outro stack de monitoria.
+- [x] A coleção do Postman lê `/metrics` da Auth e da Video e confere os alvos do Prometheus.
+
+### Feature 3 — Processor
+
+A Video Processor API consome a fila `processamento`, marca o vídeo no Redis, grava o ZIP no MinIO e publica o resultado na fila `status`. A Video API ainda não aplica esse resultado. O processor não escreve no Postgres e não envia e-mail.
+
+No local, o ZIP aparece no console do MinIO e a mensagem aparece no painel do RabbitMQ. A marca fica no Redis enquanto o trabalho dura.
+
+O serviço nasce em `src/Processor`, nas quatro camadas. ffmpeg, storage, fila e Redis ficam atrás de interface.
+
+- [ ] Consome a mensagem já publicada: `id` e `caminho`.
+- [ ] Marca o identificador no Redis antes de trabalhar. Se a marca já existir, não processa de novo. A marca sai no sucesso e no erro.
+- [ ] A fila durável se chama `status`. A mensagem é JSON com `id` e `momento` (`comecou`, `sucesso` ou `erro`). No `sucesso`, também o `caminho` do ZIP.
+- [ ] Publica `comecou` antes do término. Em seguida publica `sucesso` ou `erro`.
+- [ ] Lê o vídeo no MinIO, extrai os frames e grava o ZIP. A chave do objeto é `{id}/{id}.zip`. O caminho publicado é `videos/{id}/{id}.zip`. Sucesso só com o ZIP já salvo.
+- [ ] Erro de processamento não volta para a fila `processamento`. Não há nova tentativa neste corte.
+- [ ] O Compose sobe o processor e o Redis, com um consumidor.
+- [ ] No console do MinIO, o ZIP aparece. No painel do RabbitMQ, a mensagem aparece na fila `status`.
+- [ ] Testes unitários, dentro da cobertura de 80%. O CI passa a barrar o pull request pela cobertura de linhas do processor.
+- [ ] A métrica do processor entra no Grafana da Feature 2.
+- [ ] O contrato da fila `status` vira ADR.
+
+Fora desta feature: aplicar o status no Postgres, listagem, download, e-mail e mais de um processor no Compose.
+
+### Feature 4 — Status no registro
+
+A Video API consome a fila `status` e atualiza o Postgres de vídeos. O processor continua sem escrever no banco.
+
+Os status gravados seguem o valor que já existe no envio: `em_processamento`, `concluido` e `erro`, ao lado de `aguardando_processamento`.
+
+- [ ] `comecou` passa o vídeo para `em_processamento`.
+- [ ] `sucesso` passa para `concluido` e grava a referência do ZIP.
+- [ ] `erro` passa para `erro`.
+- [ ] `sucesso` e `erro` fecham o vídeo mesmo se o `comecou` não tiver sido aplicado.
+- [ ] A mesma mensagem, entregue de novo, não reabre um vídeo já `concluido` ou `erro`.
+- [ ] No banco `fiapx_videos`, o status muda. No sucesso, a referência do ZIP deixa de ser nula. A fila `status` esvazia.
+- [ ] Testes unitários, com a fila atrás de interface, dentro da cobertura de 80%.
+- [ ] A métrica desse consumo entra no mesmo Grafana.
+
+Fora desta feature: Redis de listagem, endpoint de listagem, download e e-mail.
+
+### Feature 5 — Listagem no Redis
+
+A listagem que o usuário vê sai do Redis. O PostgreSQL continua sendo o registro. O Redis desta feature é o mesmo que a Feature 3 subiu para a marca do processor.
+
+A Video API guarda, pelo login do token, a lista com identificador, status e, quando `concluido`, o caminho do ZIP. Ela atualiza essa entrada ao aceitar um vídeo e ao aplicar a fila `status`.
+
+- [ ] `GET /videos` exige o token e devolve só os vídeos daquele login.
+- [ ] A lista é lida do Redis.
+- [ ] Se o Redis não tiver a lista, a Video API lê o Postgres de vídeos e preenche o Redis de novo.
+- [ ] O envio e a aplicação de status passam a atualizar essa entrada.
+- [ ] Sem token válido, não há listagem.
+- [ ] Testes unitários, com o Redis atrás de interface, dentro da cobertura de 80%.
+- [ ] A coleção do Postman lista os vídeos com o token gravado no login.
+- [ ] A métrica da listagem entra no mesmo Grafana.
+
+Fora desta feature: download e e-mail.
+
+### Feature 6 — Download do ZIP
+
+A Video API entrega o ZIP quando o status é `concluido`. O arquivo sai do storage pela referência guardada no Postgres de vídeos. A listagem da Feature 5 já mostra esse caminho.
+
+- [ ] `GET /videos/{id}/download` exige o token.
+- [ ] Com status `concluido`, a resposta é o ZIP daquele vídeo.
+- [ ] Sem token válido, não há download.
+- [ ] Vídeo de outro login, vídeo inexistente ou status diferente de `concluido` não entrega o arquivo.
+- [ ] Testes unitários, com o storage atrás de interface, dentro da cobertura de 80%.
+- [ ] A coleção do Postman baixa o ZIP com o token gravado no login.
+- [ ] A métrica do download entra no mesmo Grafana.
+
+Fora desta feature: baixar o vídeo original e e-mail de erro.
+
+### Feature 7 — E-mail de erro
+
+A Video API avisa o dono depois que o status do vídeo já está `erro`. O processor não envia esse e-mail. O destinatário é o e-mail gravado no registro do vídeo.
+
+No local, a mensagem fica num capturador SMTP no mesmo Compose. O produto é o Mailpit. A mensagem não sai da máquina.
+
+- [ ] O envio acontece depois da gravação do status `erro`.
+- [ ] Se o envio falha, o status permanece `erro`. Não há outra fila para o e-mail.
+- [ ] O Compose sobe o Mailpit com esta feature.
+- [ ] No painel do Mailpit, a mensagem aparece para o e-mail do dono.
+- [ ] Testes unitários, com o e-mail atrás de interface, dentro da cobertura de 80%.
+- [ ] A métrica do envio entra no mesmo Grafana.
+
+Fora desta feature: publicação da imagem e deploy.

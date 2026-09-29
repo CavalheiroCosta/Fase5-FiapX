@@ -13,5 +13,6 @@ Decisões de arquitetura deste monorepo. O desenho do sistema continua em `plann
 | [ADR-007](./ADR-007-postgres-videos-no-compose.md) | PostgreSQL de vídeos no Compose |
 | [ADR-008](./ADR-008-video-le-jwt-local.md) | A Video API lê o JWT sozinha |
 | [ADR-009](./ADR-009-contrato-upload-e-fila.md) | Contrato do envio e da fila de processamento |
+| [ADR-010](./ADR-010-monitoramento-no-compose.md) | Prometheus e Grafana no Compose |
 
 ADR nova entra nesta tabela no mesmo pull request em que a decisão é escrita.
