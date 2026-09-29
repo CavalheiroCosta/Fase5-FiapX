@@ -11,12 +11,12 @@ docker compose up -d --build
 | Prometheus | `http://localhost:9090/targets` | Cada alvo em UP |
 | Auth | `http://localhost:5298/metrics` | Texto de métrica, sem token |
 | Video API | `http://localhost:5299/metrics` | Texto de métrica, sem token |
-| Processor | `http://localhost:5300/metrics` | Texto de métrica, sem token |
+| Processor | `http://localhost:5300/metrics` e `http://localhost:5301/metrics` | Texto de métrica, sem token |
 | Grafana | `http://localhost:3000` | Usuário `fiapx`, senha `fiapx`, dashboard `FIAP X` |
 | Mailpit | `http://localhost:8025` | E-mail de erro. SMTP na porta `1025`. A mensagem não sai da máquina |
 | Redis | `localhost:6379` | Senha `fiapx`. A chave `marca:{id}` só existe enquanto o trabalho dura. A chave `lista:{login}` guarda a listagem |
 
-Os alvos em UP são `auth`, `video`, `processor`, `postgres-usuarios`, `postgres-videos`, `minio`, `minio-bucket`, `rabbitmq` e `redis`.
+Os alvos em UP são `auth`, `video`, dois `processor`, `postgres-usuarios`, `postgres-videos`, `minio`, `minio-bucket`, `rabbitmq` e `redis`.
 
 ## O que cada painel mostra
 
@@ -31,7 +31,7 @@ O intervalo do gráfico é de 1 minuto. O scrape do Prometheus é de 15 segundos
 - **RabbitMQ — fila processamento.** Quantidade de mensagens na fila `processamento`. Sobe no envio e esvazia quando o processor confirma a mensagem.
 - **Processor — resultados.** Contador `fiapx_processor_resultados_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
 - **RabbitMQ — fila status.** Quantidade de mensagens na fila `status`. Sobe com `comecou` e depois `sucesso` ou `erro`, e esvazia quando a Video API confirma a mensagem.
-- **Processor — em andamento.** Gauge `fiapx_processor_em_andamento`. Vale 1 enquanto o ffmpeg roda. O scrape pode não pegar um vídeo curto.
+- **Processor — em andamento.** Soma do gauge `fiapx_processor_em_andamento` dos dois processors. Vale 0, 1 ou 2. O scrape pode não pegar um vídeo curto.
 - **Redis.** `no ar` quando o exporter alcança o Redis.
 - **Video — status aplicado.** Contador `fiapx_video_status_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
 - **Video — listagem.** Contador `fiapx_video_listagem_total` por `origem` (`redis` ou `postgres`). A primeira leitura de um login vem do Postgres e preenche o Redis. A seguinte vem do Redis. Permanece depois da chamada.
@@ -49,7 +49,7 @@ ffmpeg -f lavfi -i testsrc=duration=2:size=160x120:rate=1 -pix_fmt yuv420p amost
 1. Login `Adm` / `Adm` em `http://localhost:5298/login`.
 2. `POST http://localhost:5299/videos` com o campo `arquivo` e `Authorization: Bearer`.
 3. No console do MinIO (`http://localhost:9001`, usuário `fiapx`, senha `fiapxfiapx`), o bucket `videos` mostra `{id}/{id}.zip`.
-4. No painel do RabbitMQ (`http://localhost:15672`, usuário `fiapx`, senha `fiapx`), a fila `processamento` esvazia. A fila `status` mostra `comecou` e depois `sucesso`, com o caminho `videos/{id}/{id}.zip`.
+4. No painel do RabbitMQ (`http://localhost:15672`, usuário `fiapx`, senha `fiapx`), a fila `processamento` tem dois consumidores. Ela esvazia. A fila `status` mostra `comecou` e depois `sucesso`, com o caminho `videos/{id}/{id}.zip`.
 5. Espere um scrape. No Grafana, o contador do processor sobe. A fila `status` esvazia. O painel `Video — status aplicado` mostra `comecou` e `sucesso`.
 6. Envie um arquivo que não é vídeo. A fila `status` recebe `erro` e esvazia, o ZIP não aparece e a mensagem não volta para `processamento`. A linha em `fiapx_videos` fica `erro`. No Mailpit (`http://localhost:8025`), a mensagem aparece para o e-mail do dono, com o assunto `FIAP X: o vídeo não foi processado`. O painel `Video — e-mail de erro` marca `enviado`.
 7. No sucesso, a linha em `fiapx_videos` fica `concluido` e `caminho_zip` deixa de ser nulo.
@@ -70,4 +70,4 @@ docker exec (docker compose ps -q redis) redis-cli -a fiapx --no-auth-warning KE
 
 ## Fora deste painel
 
-Publicação da imagem e deploy. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md`, `docs/adrs/ADR-013-aplica-status-no-registro.md`, `docs/adrs/ADR-014-listagem-no-redis.md`, `docs/adrs/ADR-015-download-do-zip.md` e `docs/adrs/ADR-016-email-de-erro.md`.
+Publicação da imagem e deploy. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md`, `docs/adrs/ADR-013-aplica-status-no-registro.md`, `docs/adrs/ADR-014-listagem-no-redis.md`, `docs/adrs/ADR-015-download-do-zip.md`, `docs/adrs/ADR-016-email-de-erro.md` e `docs/adrs/ADR-017-dois-processors-no-compose.md`.

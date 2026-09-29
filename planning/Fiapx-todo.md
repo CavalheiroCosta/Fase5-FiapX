@@ -180,3 +180,11 @@ No local, a mensagem fica num capturador SMTP no mesmo Compose. O produto é o M
 - [x] A métrica do envio entra no mesmo Grafana.
 
 Fora desta feature: publicação da imagem e deploy.
+
+## Dois processors
+
+O Compose sobe `processor` e `processor-2` na mesma fila `processamento`. A marca `marca:{id}` continua impedindo o mesmo vídeo nos dois. A decisão está em `docs/adrs/ADR-017-dois-processors-no-compose.md`.
+
+- [x] `docker compose up -d` sobe os dois, nas portas `5300` e `5301`.
+- [x] O Prometheus raspa os dois no job `processor`.
+- [x] O painel **Processor — em andamento** soma os dois.
