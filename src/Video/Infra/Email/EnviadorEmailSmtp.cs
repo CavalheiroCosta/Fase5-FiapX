@@ -28,7 +28,7 @@ public sealed class EnviadorEmailSmtp : IEnviadorEmail
     public async Task EnviarErroAsync(string destinatario, Guid id, CancellationToken cancellationToken)
     {
         using var mensagem = new MailMessage(_remetente, destinatario, AvisoErro.Assunto, AvisoErro.Corpo(id));
-        using var cliente = new SmtpClient(_host, _porta);
+        using var cliente = new SmtpClient(_host, _porta) { EnableSsl = false }; // NOSONAR SMTP só do Mailpit local, sem TLS
         await cliente.SendMailAsync(mensagem, cancellationToken);
     }
 }
