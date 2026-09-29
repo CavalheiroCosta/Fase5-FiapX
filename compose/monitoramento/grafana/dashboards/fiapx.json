@@ -139,6 +139,68 @@
           "legendFormat": "{{queue}}"
         }
       ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Processor — resultados",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (momento) (fiapx_processor_resultados_total{job=\"processor\"})",
+          "legendFormat": "{{momento}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "RabbitMQ — fila status",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "rabbitmq_queue_messages{queue=\"status\",job=\"rabbitmq\"}",
+          "legendFormat": "{{queue}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Processor — em andamento",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "fiapx_processor_em_andamento{job=\"processor\"}"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Redis",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 28 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "redis_up{job=\"redis\"}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "1": { "text": "no ar", "color": "green" }, "0": { "text": "fora", "color": "red" } } }
+          ]
+        }
+      }
     }
   ]
 }
