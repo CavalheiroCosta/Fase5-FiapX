@@ -9,7 +9,7 @@ O desenho do sistema está em [`planning/planning.md`](planning/planning.md). A 
 | Serviço | Estado | Guia |
 | --- | --- | --- |
 | Auth API | Login emite JWT HMAC. O cadastro exige o token da conta `Adm`. | [`planning/auth.md`](planning/auth.md) |
-| Video API | `POST /videos` grava no MinIO, registra como aguardando e publica a referência. Consome a fila `status` e grava o status no Postgres. `GET /videos` lista o login a partir do Redis. | [`planning/planning.md`](planning/planning.md) |
+| Video API | `POST /videos` grava no MinIO, registra como aguardando e publica a referência. Consome a fila `status` e grava o status no Postgres. `GET /videos` lista o login a partir do Redis. `GET /videos/{id}/download` entrega o ZIP quando o status é `concluido`. | [`planning/planning.md`](planning/planning.md) |
 | Video Processor API | Consome a fila `processamento`, marca no Redis, grava o ZIP e publica na fila `status`. | [`planning/planning.md`](planning/planning.md) |
 
 A Auth, a Video e o processor usam as camadas Api, Application, Domain e Infra, em `src/Auth`, `src/Video` e `src/Processor`. Cada projeto tem o próprio `README.md`.
@@ -35,7 +35,7 @@ docker compose up -d
 
 Fora do Compose, em desenvolvimento, a Auth grava em `localhost:5432` e a Video API aponta para essas mesmas portas do host.
 
-O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. O processor consome essa fila, grava `{id}/{id}.zip` e publica na fila `status`. A Video API aplica esse resultado no Postgres. `GET /videos` exige o token e devolve a lista daquele login, lida do Redis. A Auth, a Video e o processor expõem `GET /metrics` sem token. Como ver cada painel está em [`docs/monitoramento.md`](docs/monitoramento.md). Download do ZIP e e-mail de erro são as Features 6 e 7. A ordem está em [`planning/Fiapx-todo.md`](planning/Fiapx-todo.md).
+O envio pede o token da Auth. O arquivo aparece no bucket `videos`, na chave `{id}/{nomeDoArquivo}`. A fila `processamento` recebe o identificador e o caminho `videos/{id}/{nomeDoArquivo}`. O processor consome essa fila, grava `{id}/{id}.zip` e publica na fila `status`. A Video API aplica esse resultado no Postgres. `GET /videos` exige o token e devolve a lista daquele login, lida do Redis. `GET /videos/{id}/download` exige o token e entrega o ZIP do storage quando o status é `concluido`. A Auth, a Video e o processor expõem `GET /metrics` sem token. Como ver cada painel está em [`docs/monitoramento.md`](docs/monitoramento.md). O e-mail de erro é a Feature 7. A ordem está em [`planning/Fiapx-todo.md`](planning/Fiapx-todo.md).
 
 ## Testes
 

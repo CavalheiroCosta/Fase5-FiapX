@@ -22,7 +22,7 @@ Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Aut
 - A Video API aplica o status no PostgreSQL. A listagem sai do Redis. No erro, ela envia o e-mail. O processor não escreve no banco e não envia e-mail.
 - Download do ZIP só com status `concluido`.
 - Erro de processamento não volta para a fila. O vídeo permanece `erro`.
-- A ordem de implementação está em `planning/Fiapx-todo.md`. A Feature 5 já lista os vídeos do login a partir do Redis. O download do ZIP é a Feature 6. O e-mail de erro é a Feature 7.
+- A ordem de implementação está em `planning/Fiapx-todo.md`. A Feature 6 já entrega o ZIP quando o vídeo está `concluido`. O e-mail de erro é a Feature 7.
 
 ## Ambiente local
 

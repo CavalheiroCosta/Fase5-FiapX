@@ -1,6 +1,6 @@
 # Como verificar o monitoramento
 
-Prometheus coleta o que já existe. O Grafana mostra isso num painel só. O download e o e-mail ainda não entram aqui. A feature seguinte acrescenta painel no mesmo dashboard, em `compose/monitoramento/grafana/dashboards/fiapx.json`.
+Prometheus coleta o que já existe. O Grafana mostra isso num painel só. O e-mail ainda não entra aqui. A feature seguinte acrescenta painel no mesmo dashboard, em `compose/monitoramento/grafana/dashboards/fiapx.json`.
 
 ```powershell
 docker compose up -d --build
@@ -34,6 +34,7 @@ O intervalo do gráfico é de 1 minuto. O scrape do Prometheus é de 15 segundos
 - **Redis.** `no ar` quando o exporter alcança o Redis.
 - **Video — status aplicado.** Contador `fiapx_video_status_total` por `momento` (`comecou`, `sucesso`, `erro` ou `ignorado`). Permanece depois do trabalho.
 - **Video — listagem.** Contador `fiapx_video_listagem_total` por `origem` (`redis` ou `postgres`). A primeira leitura de um login vem do Postgres e preenche o Redis. A seguinte vem do Redis. Permanece depois da chamada.
+- **Video — download.** Contador `fiapx_video_download_total` por `resultado` (`entregue` ou `recusado`). Sobe no `GET /videos/{id}/download`. Permanece depois da chamada.
 
 ## Prova do processor
 
@@ -51,6 +52,7 @@ ffmpeg -f lavfi -i testsrc=duration=2:size=160x120:rate=1 -pix_fmt yuv420p amost
 6. Envie um arquivo que não é vídeo. A fila `status` recebe `erro` e esvazia, o ZIP não aparece e a mensagem não volta para `processamento`. A linha em `fiapx_videos` fica `erro`.
 7. No sucesso, a linha em `fiapx_videos` fica `concluido` e `caminho_zip` deixa de ser nulo.
 8. `GET http://localhost:5299/videos` com `Authorization: Bearer` devolve o vídeo desse login. No `concluido`, o item traz `caminhoZip`. Sem token, a resposta é 401. A primeira chamada marca `postgres` no painel `Video — listagem`. A seguinte marca `redis`.
+9. `GET http://localhost:5299/videos/{id}/download` com o mesmo token devolve o ZIP quando o status é `concluido`. O painel `Video — download` marca `entregue`. Sem token, a resposta é 401 e o painel marca `recusado`. Vídeo de outro login, inexistente ou ainda não `concluido` responde 404.
 
 A lista fica no Redis depois dessa leitura:
 
@@ -66,4 +68,4 @@ docker exec (docker compose ps -q redis) redis-cli -a fiapx --no-auth-warning KE
 
 ## Fora deste painel
 
-Download e e-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md`, `docs/adrs/ADR-013-aplica-status-no-registro.md` e `docs/adrs/ADR-014-listagem-no-redis.md`.
+E-mail. A decisão do que é raspado está em `docs/adrs/ADR-010-monitoramento-no-compose.md`, `docs/adrs/ADR-012-metricas-do-processor.md`, `docs/adrs/ADR-013-aplica-status-no-registro.md`, `docs/adrs/ADR-014-listagem-no-redis.md` e `docs/adrs/ADR-015-download-do-zip.md`.

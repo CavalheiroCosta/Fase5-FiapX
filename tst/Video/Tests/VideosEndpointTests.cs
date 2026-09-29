@@ -154,6 +154,77 @@ public class VideosEndpointTests : IClassFixture<VideoApiFactory>
         Assert.Empty(jsonOutro.RootElement.EnumerateArray());
     }
 
+    [Fact]
+    public async Task Download_sem_token_responde_401()
+    {
+        var client = _factory.CreateClient();
+
+        var resposta = await client.GetAsync($"/videos/{Guid.NewGuid():D}/download");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resposta.StatusCode);
+        Assert.Equal("Acesso recusado.", await Erro(resposta));
+    }
+
+    [Fact]
+    public async Task Download_entrega_o_zip_so_quando_concluido_do_dono()
+    {
+        var client = _factory.CreateClient();
+        using var pedido = Pedido(TokenValido(), [1, 2, 3], "aula.mp4");
+        var enviado = await client.SendAsync(pedido);
+        using var jsonEnvio = JsonDocument.Parse(await enviado.Content.ReadAsStringAsync());
+        var id = jsonEnvio.RootElement.GetProperty("id").GetGuid();
+
+        var aguardando = await client.SendAsync(Baixar(TokenValido(), id));
+        Assert.Equal(HttpStatusCode.NotFound, aguardando.StatusCode);
+        Assert.Equal("Vídeo não encontrado.", await Erro(aguardando));
+
+        var armazenamento = _factory.Services.GetRequiredService<Video.Infra.Storage.ArmazenamentoMemoria>();
+        var zip = await armazenamento.SalvarAsync(id, $"{id:D}.zip", new MemoryStream([9, 8, 7]), CancellationToken.None);
+        var repositorio = _factory.Services.GetRequiredService<Video.Infra.Persistence.VideoRepositorioMemoria>();
+        var video = Assert.Single(repositorio.Listar(), item => item.Id == id);
+        Assert.Equal(Video.Domain.Videos.EfeitoStatus.Alterado, video.Aplicar(Video.Domain.Videos.MomentoStatus.Sucesso, zip));
+
+        var deOutro = await client.SendAsync(Baixar(TokenDe("bia", "bia@email.com"), id));
+        Assert.Equal(HttpStatusCode.NotFound, deOutro.StatusCode);
+        Assert.Equal("Vídeo não encontrado.", await Erro(deOutro));
+
+        var ausente = await client.SendAsync(Baixar(TokenValido(), Guid.NewGuid()));
+        Assert.Equal(HttpStatusCode.NotFound, ausente.StatusCode);
+
+        var resposta = await client.SendAsync(Baixar(TokenValido(), id));
+        Assert.Equal(HttpStatusCode.OK, resposta.StatusCode);
+        Assert.Equal("application/zip", resposta.Content.Headers.ContentType?.MediaType);
+        Assert.Equal($"{id:D}.zip", resposta.Content.Headers.ContentDisposition?.FileName);
+        Assert.Equal(new byte[] { 9, 8, 7 }, await resposta.Content.ReadAsByteArrayAsync());
+    }
+
+    [Fact]
+    public async Task Download_com_status_erro_responde_404()
+    {
+        var client = _factory.CreateClient();
+        using var pedido = Pedido(TokenValido(), [4], "aula.mp4");
+        var enviado = await client.SendAsync(pedido);
+        using var jsonEnvio = JsonDocument.Parse(await enviado.Content.ReadAsStringAsync());
+        var id = jsonEnvio.RootElement.GetProperty("id").GetGuid();
+        var repositorio = _factory.Services.GetRequiredService<Video.Infra.Persistence.VideoRepositorioMemoria>();
+        var video = Assert.Single(repositorio.Listar(), item => item.Id == id);
+        Assert.Equal(Video.Domain.Videos.EfeitoStatus.Alterado, video.Aplicar(Video.Domain.Videos.MomentoStatus.Erro, null));
+
+        var resposta = await client.SendAsync(Baixar(TokenValido(), id));
+
+        Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
+        Assert.Equal("Vídeo não encontrado.", await Erro(resposta));
+    }
+
+    private static HttpRequestMessage Baixar(string? token, Guid id)
+    {
+        var pedido = new HttpRequestMessage(HttpMethod.Get, $"/videos/{id:D}/download");
+        if (token is not null)
+            pedido.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        return pedido;
+    }
+
     private static HttpRequestMessage Pedido(string? token, byte[] bytes, string nome)
     {
         var conteudo = new MultipartFormDataContent();

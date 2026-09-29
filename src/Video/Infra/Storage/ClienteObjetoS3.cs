@@ -45,6 +45,15 @@ public sealed class ClienteObjetoS3 : IClienteObjeto, IDisposable
         return _cliente.PutObjectAsync(pedido, cancellationToken);
     }
 
+    public async Task<Stream> LerAsync(string bucket, string chave, CancellationToken cancellationToken)
+    {
+        using var resposta = await _cliente.GetObjectAsync(bucket, chave, cancellationToken);
+        var memoria = new MemoryStream();
+        await resposta.ResponseStream.CopyToAsync(memoria, cancellationToken);
+        memoria.Position = 0;
+        return memoria;
+    }
+
     public Task ApagarAsync(string bucket, string chave, CancellationToken cancellationToken) =>
         _cliente.DeleteObjectAsync(bucket, chave, cancellationToken);
 

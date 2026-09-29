@@ -1,3 +1,4 @@
+using Video.Application.Download;
 using Video.Application.Envio;
 using Video.Application.Listagem;
 using Video.Domain.Videos;
@@ -7,8 +8,18 @@ namespace Video.Api.Controllers;
 
 [ApiController]
 [Route("videos")]
-public sealed class VideosController(EnviarVideoUseCase enviar, ListarVideosUseCase listar) : ControllerBase
+public sealed class VideosController(EnviarVideoUseCase enviar, ListarVideosUseCase listar, BaixarZipUseCase baixar) : ControllerBase
 {
+    [HttpGet("{id:guid}/download")]
+    public async Task<IActionResult> Baixar(Guid id, CancellationToken cancellationToken)
+    {
+        var resultado = await baixar.ExecutarAsync(Bearer(), id, cancellationToken);
+        if (!resultado.Sucesso || resultado.Valor is null)
+            return ParaErro(resultado.Falha!);
+
+        return File(resultado.Valor.Conteudo, "application/zip", resultado.Valor.NomeArquivo);
+    }
+
     [HttpGet]
     public async Task<IActionResult> Listar(CancellationToken cancellationToken)
     {
@@ -63,6 +74,7 @@ public sealed class VideosController(EnviarVideoUseCase enviar, ListarVideosUseC
     {
         CodigosFalha.Validacao => new BadRequestObjectResult(new ErroResposta(falha.Mensagem)),
         CodigosFalha.AcessoRecusado => new UnauthorizedObjectResult(new ErroResposta(falha.Mensagem)),
+        CodigosFalha.NaoEncontrado => new NotFoundObjectResult(new ErroResposta(falha.Mensagem)),
         _ => new ObjectResult(new ErroResposta(falha.Mensagem)) { StatusCode = StatusCodes.Status503ServiceUnavailable }
     };
 }

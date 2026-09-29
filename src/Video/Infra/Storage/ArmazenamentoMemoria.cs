@@ -45,6 +45,17 @@ public sealed class ArmazenamentoMemoria : IArmazenamentoVideo
         return caminho;
     }
 
+    public Task<Stream> AbrirAsync(string caminho, CancellationToken cancellationToken)
+    {
+        lock (_trava)
+        {
+            if (!_objetos.TryGetValue(caminho, out var bytes))
+                throw new IOException("objeto ausente");
+
+            return Task.FromResult<Stream>(new MemoryStream(bytes, writable: false));
+        }
+    }
+
     public Task RemoverAsync(string caminho, CancellationToken cancellationToken)
     {
         lock (_trava)

@@ -12,6 +12,9 @@ public sealed class ArmazenamentoS3(IClienteObjeto cliente, string bucket) : IAr
         return caminho;
     }
 
+    public Task<Stream> AbrirAsync(string caminho, CancellationToken cancellationToken) =>
+        cliente.LerAsync(bucket, CaminhoVideo.Chave(bucket, caminho), cancellationToken);
+
     public Task RemoverAsync(string caminho, CancellationToken cancellationToken) =>
         cliente.ApagarAsync(bucket, CaminhoVideo.Chave(bucket, caminho), cancellationToken);
 

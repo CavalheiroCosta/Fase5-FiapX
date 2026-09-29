@@ -1,3 +1,4 @@
+using Video.Application.Download;
 using Video.Application.Envio;
 using Video.Application.Listagem;
 using Video.Application.Status;
@@ -27,6 +28,11 @@ public static class DependencyInjection
             provedor.GetRequiredService<ILeitorToken>(),
             provedor.GetRequiredService<IListaVideos>(),
             provedor.GetRequiredService<IVideoRepository>(),
+            provedor.GetRequiredService<MetricasVideo>()));
+        services.AddScoped(provedor => new BaixarZipUseCase(
+            provedor.GetRequiredService<ILeitorToken>(),
+            provedor.GetRequiredService<IVideoRepository>(),
+            provedor.GetRequiredService<IArmazenamentoVideo>(),
             provedor.GetRequiredService<MetricasVideo>()));
         return services;
     }
