@@ -136,6 +136,21 @@ services:
       timeout: 5s
       retries: 10
 
+  amostra-email:
+    image: curlimages/curl:8.11.1
+    depends_on:
+      mailpit:
+        condition: service_healthy
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        caixa=$$(curl -sf http://mailpit:8025/api/v1/messages) || exit 1
+        echo "$$caixa" | grep -Eq '"total":[[:space:]]*0' || exit 0
+        curl -sf -X POST http://mailpit:8025/api/v1/send \
+          -H "Content-Type: application/json" \
+          -d '{"From":{"Email":"fiapx@fiapx.local"},"To":[{"Email":"adm@adm.com"}],"Subject":"FIAP X: o vídeo não foi processado","Text":"O vídeo 00000000-0000-0000-0000-000000000001 não foi processado."}'
+
   processor:
     build:
       context: .
