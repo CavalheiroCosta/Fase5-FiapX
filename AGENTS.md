@@ -26,7 +26,7 @@ Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Aut
 
 ## Ambiente local
 
-O Docker Compose deste corte sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o processor, o MinIO, o RabbitMQ, o Redis, o Mailpit, o Prometheus e o Grafana. Os serviços apontam para esse compose e o envio roda sem nuvem. A prova do painel está em `docs/monitoramento.md`.
+O Docker Compose deste corte sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, dois processors, o MinIO, o RabbitMQ, o Redis, o Mailpit, o Prometheus e o Grafana. Os serviços apontam para esse compose e o envio roda sem nuvem. A prova do painel está em `docs/monitoramento.md`.
 
 A fila na nuvem usa o mesmo contrato. O produto da nuvem ainda não foi escolhido.
 

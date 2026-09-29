@@ -30,7 +30,7 @@ sequenceDiagram
 
 Este projeto referencia Application e Infra. As regras ficam no Domain. Redis, MinIO, RabbitMQ e ffmpeg ficam na Infra.
 
-Fora do Compose, em desenvolvimento, o storage é `http://localhost:9000`, a fila é `localhost:5672` e o Redis é `localhost:6379`. No Compose, o host público é `http://localhost:5300`.
+Fora do Compose, em desenvolvimento, o storage é `http://localhost:9000`, a fila é `localhost:5672` e o Redis é `localhost:6379`. No Compose, os hosts públicos são `http://localhost:5300` e `http://localhost:5301`.
 
 O passo a passo da prova local, com o ZIP no MinIO, a fila `status` e o Grafana, está em [`docs/monitoramento.md`](../../../docs/monitoramento.md).
 
