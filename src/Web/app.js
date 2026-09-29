@@ -71,14 +71,14 @@ function abrirArea(login) {
     telaAdm.hidden = false
     telaVideos.hidden = true
     pararLista()
-    carregarUsuarios()
+    carregarUsuarios().catch(() => mostrarAviso('Não foi possível concluir a ação.'))
     return
   }
 
   titulo.textContent = 'Vídeos'
   telaAdm.hidden = true
   telaVideos.hidden = false
-  carregarVideos()
+  carregarVideos().catch(() => mostrarAviso('Não foi possível concluir a ação.'))
 }
 
 async function entrar(evento) {
@@ -315,12 +315,18 @@ function linhaVideo(video) {
   const linha = document.createElement('tr')
   const id = celula(video.id)
   id.className = 'celula-id'
-  linha.append(id, celula(statusTexto[video.status] ?? video.status))
+  const status = document.createElement('td')
+  const marca = document.createElement('span')
+  marca.className = `status status-${video.status}`
+  marca.textContent = statusTexto[video.status] ?? video.status
+  status.append(marca)
+  linha.append(id, status)
 
   const acao = document.createElement('td')
   if (video.status === 'concluido') {
     const baixar = document.createElement('button')
     baixar.type = 'button'
+    baixar.className = 'compacto'
     baixar.textContent = 'Baixar ZIP'
     baixar.addEventListener('click', () => baixarZip(video.id))
     acao.append(baixar)

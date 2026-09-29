@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>FIAP X</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -12,7 +18,7 @@
         <p class="marca">FIAP X</p>
         <h1 id="titulo">Entrar</h1>
       </div>
-      <button id="sair" type="button" hidden>Sair</button>
+      <button id="sair" class="terciario" type="button" hidden>Sair</button>
     </header>
 
     <main>
@@ -97,8 +103,8 @@
         <h2>Monitoramento</h2>
         <p class="nota">O Grafana entra com usuário <code>fiapx</code> e senha <code>fiapx</code>.</p>
         <div class="acoes">
-          <a class="botao" href="http://localhost:3000/d/fiapx" target="_blank" rel="noopener">Abrir Grafana</a>
-          <a class="botao" href="http://localhost:9090/targets" target="_blank" rel="noopener">Abrir Prometheus</a>
+          <a class="botao secundario" href="http://localhost:3000/d/fiapx" target="_blank" rel="noopener">Abrir Grafana</a>
+          <a class="botao secundario" href="http://localhost:9090/targets" target="_blank" rel="noopener">Abrir Prometheus</a>
         </div>
       </section>
 
@@ -115,7 +121,7 @@
 
         <div class="linha-titulo">
           <h2>Meus vídeos</h2>
-          <button id="atualizar" type="button">Atualizar</button>
+          <button id="atualizar" class="secundario" type="button">Atualizar</button>
         </div>
         <div class="rolagem">
           <table>
