@@ -188,3 +188,27 @@ O Compose sobe `processor` e `processor-2` na mesma fila `processamento`. A marc
 - [x] `docker compose up -d` sobe os dois, nas portas `5300` e `5301`.
 - [x] O Prometheus raspa os dois no job `processor`.
 - [x] O painel **Processor — em andamento** soma os dois.
+
+## Entrega
+
+A parte técnica deste corte está fechada. O que falta é preparar o que o enunciado pede para apresentar. A fonte é `planning/POSTECH - SOAT - Fase 5 - Hacka.pdf`.
+
+O vídeo tem no máximo 10 minutos e precisa mostrar três coisas: a documentação, a arquitetura escolhida e o projeto funcionando.
+
+### Documentação
+
+- [ ] Reunir a arquitetura num caminho curto para a apresentação. O desenho está em `planning/planning.md`. As decisões estão em `docs/adrs`. O panorama do repositório está no `README.md`. O painel está em `docs/monitoramento.md`.
+- [ ] Deixar explícito como os recursos nascem. O Compose sobe os dois Postgres, o Redis, o RabbitMQ, o MinIO, o Mailpit, o Prometheus, o Grafana e o front. O schema de `fiapx_usuarios` e o de `fiapx_videos` nascem na subida da Auth e da Video. Não há um script SQL separado.
+
+### Código
+
+- [ ] O link do GitHub é [Fase5-FiapX](https://github.com/CavalheiroCosta/Fase5-FiapX). A `main` precisa conter o front. Ele está no pull request da branch `feat/web`.
+
+### Vídeo
+
+- [ ] Abrir a documentação e a arquitetura: Auth, Video API, dois processors, filas `processamento` e `status`, dois Postgres, Redis, MinIO, Mailpit, Prometheus e Grafana.
+- [ ] Subir tudo com `docker compose up -d` e entrar em `http://localhost:5173`.
+- [ ] Entrar como `Adm` / `Adm`, cadastrar um usuário e abrir o Grafana e o Prometheus.
+- [ ] Entrar com esse usuário e enviar mais de um vídeo. A fila segura o pico. Os dois processors trabalham em paralelo. A lista mostra o status daquele login.
+- [ ] Com status `concluido`, baixar o ZIP. Com status `erro`, mostrar o aviso no Mailpit.
+- [ ] Mostrar o CI no GitHub Actions: build, testes, cobertura de 80%, SonarCloud e imagem local. Publicação da imagem e deploy continuam fora. O ambiente apresentado é o Compose.
