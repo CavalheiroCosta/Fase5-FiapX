@@ -48,7 +48,7 @@ services:
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: fiapx
-      MINIO_ROOT_PASSWORD: fiapxfiapx
+      MINIO_ROOT_PASSWORD: fiapxfiapx # NOSONAR credencial só do ambiente local
     ports:
       - "9000:9000"
       - "9001:9001"
