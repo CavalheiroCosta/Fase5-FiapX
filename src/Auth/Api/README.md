@@ -35,7 +35,7 @@ sequenceDiagram
     AssinaturaHmac-->>Cliente: token sem senha
 ```
 
-`GET /` responde 404. A conta `Adm` não é removida.
+`GET /` responde 404. `GET /metrics` responde o texto do Prometheus e não exige token. A conta `Adm` não é removida.
 
 Este projeto referencia Application e Infra. As regras ficam no Domain. O PostgreSQL de usuários e a assinatura HMAC ficam na Infra. A chave local está em `appsettings.json`.
 
