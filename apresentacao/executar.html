@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X — Como executar</title>
+    <link rel="stylesheet" href="css/guia.css" />
+  </head>
+  <body>
+    <aside class="menu">
+      <p class="marca">FIAP X</p>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="arquitetura.html">Arquitetura</a>
+        <a href="dominio.html">Domínio</a>
+        <a href="nuvem.html">Nuvem</a>
+        <a href="tecnologias.html">Tecnologias</a>
+        <a href="executar.html" aria-current="page">Como executar</a>
+      </nav>
+      <p class="atalho">← e → trocam a página.</p>
+    </aside>
+
+    <main class="conteudo">
+      <p class="kicker">Como executar o projeto</p>
+      <h1>Subir, entrar e mostrar</h1>
+      <p class="lede">
+        Na pasta do Compose, um comando sobe os dois Postgres, o Redis, o RabbitMQ, o MinIO, o Mailpit, o Prometheus, o Grafana, as três APIs, os dois processors e o front.
+        O schema nasce com a Auth e com a Video API.
+      </p>
+
+      <h2>Subir</h2>
+      <p class="nota">Docker em execução. O comando roda em <code>Fase5-FiapX</code>, onde está o <code>compose.yaml</code>. A primeira vez constrói as imagens.</p>
+      <pre><code>docker compose up -d --build</code></pre>
+      <p class="nota">Depois que as imagens já existem, <code>docker compose up -d</code> basta. Para acompanhar: <code>docker compose ps</code>.</p>
+
+      <h2>Abrir este guia</h2>
+      <pre><code>start .\apresentacao\index.html</code></pre>
+
+      <h2>Onde entrar</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tela</th>
+            <th>Endereço</th>
+            <th>Acesso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Front</td>
+            <td><code>http://localhost:5173</code></td>
+            <td><code>Adm</code> / <code>Adm</code> abre o cadastro e os atalhos do Grafana, do Prometheus, do MinIO, do RabbitMQ e do Mailpit. Outro login abre os vídeos.</td>
+          </tr>
+          <tr>
+            <td>Grafana</td>
+            <td><code>http://localhost:3000</code></td>
+            <td><code>fiapx</code> / <code>fiapx</code>. Dashboard <code>FIAP X</code>. O botão do front já abre <code>/d/fiapx</code>.</td>
+          </tr>
+          <tr>
+            <td>Prometheus</td>
+            <td><code>http://localhost:9090/targets</code></td>
+            <td>Sem senha. Confira os alvos em UP, inclusive os dois <code>processor</code>.</td>
+          </tr>
+          <tr>
+            <td>MinIO</td>
+            <td><code>http://localhost:9001</code></td>
+            <td><code>fiapx</code> / <code>fiapxfiapx</code>. Bucket <code>videos</code>.</td>
+          </tr>
+          <tr>
+            <td>RabbitMQ</td>
+            <td><code>http://localhost:15672</code></td>
+            <td><code>fiapx</code> / <code>fiapx</code>. Fila <code>processamento</code> com dois consumidores.</td>
+          </tr>
+          <tr>
+            <td>Mailpit</td>
+            <td><code>http://localhost:8025</code></td>
+            <td>Sem senha. Depois do Compose, a caixa já tem o assunto <code>FIAP X: o vídeo não foi processado</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Na câmera</h2>
+      <ol class="passos">
+        <li>Com tudo de pé, abra <code>http://localhost:5173</code>.</li>
+        <li>Entre como <code>Adm</code> / <code>Adm</code>. Cadastre um usuário, por exemplo login <code>ana</code>, com um e-mail <code>ana@fiapx.local</code>. Abra os atalhos do ambiente. No Prometheus, os alvos estão UP. No Mailpit, a caixa já tem um aviso de erro.</li>
+        <li>Saia e entre com esse usuário. Envie dois vídeos curtos. A lista mostra o status daquele login: aguardando, em processamento, concluído.</li>
+        <li>No concluído, baixe o ZIP. No MinIO, o objeto é <code>{id}/{id}.zip</code>. No RabbitMQ, a fila <code>processamento</code> tem dois consumidores.</li>
+        <li>Para o erro, envie um arquivo com extensão de vídeo que o ffmpeg não lê, por exemplo um texto renomeado para <code>.mp4</code>. A lista fica em erro, o ZIP não aparece e o Mailpit mostra a mensagem para o e-mail do dono.</li>
+        <li>No Grafana, aponte os painéis de fila, processor, status aplicado, listagem, download e e-mail de erro.</li>
+        <li>No GitHub Actions do repositório, abra o workflow: build, SonarCloud e as imagens. O endereço é <code>https://github.com/CavalheiroCosta/Fase5-FiapX</code>.</li>
+      </ol>
+
+      <h2>Amostra de vídeo</h2>
+      <p class="nota">Não versionar o arquivo. Dois mp4 curtos bastam para a lista. Um vídeo mais longo deixa a chave <code>marca:{id}</code> visível enquanto o ffmpeg roda.</p>
+      <pre><code>ffmpeg -f lavfi -i testsrc=duration=2:size=160x120:rate=1 -pix_fmt yuv420p amostra.mp4</code></pre>
+
+      <h2>Fora do Compose</h2>
+      <p class="nota">Com a Auth em <code>localhost:5298</code> e a Video em <code>localhost:5299</code>, o front também sobe assim, dentro de <code>src/Web</code>:</p>
+      <pre><code>npm install
+npm run dev</code></pre>
+
+      <nav class="pager">
+        <a href="tecnologias.html">← Tecnologias</a>
+        <a href="index.html">Voltar ao início →</a>
+      </nav>
+    </main>
+    <script src="js/guia.js"></script>
+  </body>
+</html>

@@ -1,0 +1,637 @@
+:root {
+  --bg: #0b0e11;
+  --surface: #1e2329;
+  --line: #2b3139;
+  --text: #eaecef;
+  --muted: #929aa5;
+  --faint: #707a8a;
+  --yellow: #fcd535;
+  --ink: #181a20;
+  --green: #0ecb81;
+  --blue: #3b82f6;
+  --teal: #2dbdb6;
+  --red: #f6465d;
+  --menu: 232px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+body {
+  display: grid;
+  grid-template-columns: var(--menu) 1fr;
+}
+
+a {
+  color: var(--yellow);
+}
+
+code {
+  font-family: Consolas, "Cascadia Mono", ui-monospace, monospace;
+  font-size: 0.92em;
+  color: var(--yellow);
+}
+
+.menu {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 16px;
+  border-right: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.marca {
+  margin: 0 8px 16px;
+  color: var(--yellow);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.menu a {
+  display: block;
+  padding: 8px 12px;
+  color: var(--text);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+.menu a:hover,
+.menu a[aria-current="page"] {
+  color: var(--yellow);
+  border-left-color: var(--yellow);
+  background: var(--surface);
+}
+
+.menu .atalho {
+  margin-top: auto;
+  padding: 12px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.conteudo {
+  width: min(1120px, 100%);
+  padding: 36px 40px 64px;
+}
+
+.kicker {
+  margin: 0 0 8px;
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 36px;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  margin-top: 36px;
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+.fala {
+  margin: 20px 0 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-left: 3px solid var(--yellow);
+}
+
+.fala strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lede {
+  max-width: 68ch;
+  color: var(--muted);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cartao {
+  display: block;
+  padding: 16px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.cartao:hover {
+  border-color: var(--yellow);
+}
+
+.cartao span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.roteiro {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roteiro li {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.roteiro time {
+  color: var(--yellow);
+  font-variant-numeric: tabular-nums;
+}
+
+table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.passos {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: passo;
+}
+
+.passos li {
+  position: relative;
+  padding: 14px 0 14px 44px;
+  border-bottom: 1px solid var(--line);
+  counter-increment: passo;
+}
+
+.passos p {
+  margin: 0;
+}
+
+.passos li::before {
+  content: counter(passo);
+  position: absolute;
+  top: 14px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--ink);
+  background: var(--yellow);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.contextos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.contexto {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--yellow);
+}
+
+.contexto p,
+.adr p {
+  margin: 8px 0 0;
+}
+
+.contexto ul,
+.adr ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.adrs {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.adr {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.adr h3 {
+  color: var(--yellow);
+}
+
+.camadas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.camadas div {
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.camadas strong {
+  display: block;
+}
+
+.camadas span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.status span,
+.trilho span {
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.status .fecha {
+  border-color: var(--green);
+}
+
+.status .falha {
+  border-color: var(--red);
+}
+
+.trilho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.trilho .feito {
+  border-top: 3px solid var(--green);
+}
+
+.trilho .desenhado {
+  border-top: 3px solid var(--yellow);
+}
+
+.mapa {
+  margin: 16px 0 0;
+  padding: 16px;
+  background: #12161c;
+  border: 1px solid var(--line);
+  overflow-x: auto;
+}
+
+.desenho {
+  display: block;
+  width: 100%;
+  min-width: 880px;
+  height: auto;
+}
+
+.desenho rect {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.desenho .app rect {
+  stroke: var(--yellow);
+}
+
+.desenho .fila rect {
+  stroke: var(--blue);
+}
+
+.desenho .dado rect {
+  stroke: var(--green);
+}
+
+.desenho .obs rect {
+  stroke: var(--teal);
+}
+
+.desenho .titulo {
+  fill: var(--text);
+  font: 600 15px Inter, "Segoe UI", sans-serif;
+}
+
+.desenho .sub {
+  fill: var(--muted);
+  font: 500 12px Inter, "Segoe UI", sans-serif;
+}
+
+.desenho .fluxo {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 1.5;
+}
+
+.desenho .volta {
+  stroke-dasharray: 5 4;
+  stroke: var(--yellow);
+}
+
+.desenho .rotulo {
+  fill: var(--yellow);
+  font: 500 11px Inter, "Segoe UI", sans-serif;
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.legenda i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border: 2px solid var(--yellow);
+}
+
+.legenda .fila i {
+  border-color: var(--blue);
+}
+
+.legenda .dado i {
+  border-color: var(--green);
+}
+
+.legenda .obs i {
+  border-color: var(--teal);
+}
+
+.nota {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.pager a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.pager a:hover {
+  color: var(--yellow);
+}
+
+pre {
+  margin: 12px 0 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+pre code {
+  color: var(--text);
+}
+
+.placa {
+  display: grid;
+  gap: 0;
+  margin-top: 20px;
+  padding: 8px 8px 16px;
+  background: #12161c;
+  border: 1px solid var(--line);
+}
+
+.zona {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  padding: 14px 12px 0;
+}
+
+.zona-nome {
+  margin: 0;
+  padding-top: 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.miolo {
+  display: grid;
+  gap: 10px;
+}
+
+.trilha,
+.pods,
+.dados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.elo {
+  align-self: center;
+  color: var(--faint);
+  font-size: 18px;
+}
+
+.bloco {
+  flex: 1 1 160px;
+  min-width: 148px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.bloco strong {
+  display: block;
+  font-size: 15px;
+}
+
+.bloco span,
+.cerca p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bloco.app {
+  border-top: 3px solid var(--yellow);
+}
+
+.bloco.fila {
+  border-top: 3px solid var(--blue);
+}
+
+.bloco.dado {
+  border-top: 3px solid var(--green);
+}
+
+.bloco.obs {
+  border-top: 3px solid var(--teal);
+}
+
+.cerca {
+  padding: 12px;
+  border: 1px solid var(--yellow);
+}
+
+.cerca.ecs {
+  border-color: var(--blue);
+}
+
+.cerca p {
+  margin: 0 0 10px;
+}
+
+.cerca .pods {
+  margin: 0;
+}
+
+.desce {
+  margin: 0;
+  padding: 8px 12px 0 116px;
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.porque {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.porque article {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.porque h3 {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 860px) {
+  body {
+    grid-template-columns: 1fr;
+  }
+
+  .menu {
+    position: static;
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .menu nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .conteudo {
+    padding: 24px 16px 48px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .contextos,
+  .camadas,
+  .porque {
+    grid-template-columns: 1fr;
+  }
+
+  .zona,
+  .desce {
+    grid-template-columns: 1fr;
+    padding-left: 12px;
+  }
+}

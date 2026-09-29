@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X — Domínio</title>
+    <link rel="stylesheet" href="css/guia.css" />
+  </head>
+  <body>
+    <aside class="menu">
+      <p class="marca">FIAP X</p>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="arquitetura.html">Arquitetura</a>
+        <a href="dominio.html" aria-current="page">Domínio</a>
+        <a href="nuvem.html">Nuvem</a>
+        <a href="tecnologias.html">Tecnologias</a>
+        <a href="executar.html">Como executar</a>
+      </nav>
+      <p class="atalho">← e → trocam a página.</p>
+    </aside>
+
+    <main class="conteudo">
+      <p class="kicker">Domínio dos serviços</p>
+      <h1>Três contextos, uma fronteira cada</h1>
+      <p class="lede">
+        A Auth reconhece quem entra. A Video API guarda de quem é o vídeo, em que ponto está e onde está o arquivo.
+        O processor trabalha um vídeo que a Video API já aceitou. Nenhum dos três invade o banco do outro.
+      </p>
+
+      <div class="contextos">
+        <article class="contexto">
+          <h3>Auth API</h3>
+          <p>Usuário, credencial, acesso e token. A conta <code>Adm</code> cadastra os demais. Não há autocadastro.</p>
+          <ul>
+            <li>Guid, login, nome, e-mail e hash da senha em <code>fiapx_usuarios</code>.</li>
+            <li>Login sem token. Senha errada e usuário inexistente recebem a mesma recusa.</li>
+            <li>O token carrega login e e-mail, vale 30 minutos e não fica gravado.</li>
+          </ul>
+        </article>
+        <article class="contexto">
+          <h3>Video API</h3>
+          <p>Envio, status, listagem e download. O arquivo mora no storage. O Postgres guarda a referência.</p>
+          <ul>
+            <li>Ordem do envio: storage, registro, fila.</li>
+            <li><code>GET /videos</code> lê <code>lista:{login}</code>. Se a chave não existe, reconstrói pelo Postgres.</li>
+            <li>Download só com <code>concluido</code>. Outro login, vídeo inexistente ou status aberto respondem 404.</li>
+            <li>No <code>erro</code>, o e-mail sai depois da gravação. Se o envio falha, o status permanece <code>erro</code>.</li>
+          </ul>
+        </article>
+        <article class="contexto">
+          <h3>Video Processor API</h3>
+          <p>Quebra o vídeo, monta o ZIP e devolve o resultado. Não atende o usuário.</p>
+          <ul>
+            <li>Consome <code>id</code> e <code>caminho</code>. Publica <code>comecou</code> antes do fim.</li>
+            <li>Um frame por segundo, em JPEG, dentro do ZIP.</li>
+            <li>Erro não volta para <code>processamento</code>. Não há nova tentativa.</li>
+            <li>Vários processors, a mesma fila. Vídeos diferentes em paralelo.</li>
+          </ul>
+        </article>
+      </div>
+
+      <h2>As quatro camadas</h2>
+      <p class="nota">Auth, Video e processor repetem a mesma divisão. A imagem Docker publica só o projeto Api. Storage, fila, Redis, e-mail e ffmpeg ficam atrás de interface.</p>
+      <div class="camadas">
+        <div>
+          <strong>Api</strong>
+          <span>HTTP. Recebe a requisição e devolve a resposta.</span>
+        </div>
+        <div>
+          <strong>Application</strong>
+          <span>Casos de uso. Orquestra o que a regra já decidiu.</span>
+        </div>
+        <div>
+          <strong>Domain</strong>
+          <span>Usuário, vídeo, status e as regras que não dependem de infra.</span>
+        </div>
+        <div>
+          <strong>Infra</strong>
+          <span>Postgres, storage, fila, Redis, e-mail e a assinatura do token, atrás de interface.</span>
+        </div>
+      </div>
+
+      <h2>ADRs para citar</h2>
+      <p class="nota">A lista inteira está em <code>docs/adrs</code>. Na apresentação, estes seis bastam. Cada um cabe em uma frase.</p>
+      <div class="adrs">
+        <article class="adr">
+          <h3>ADR-001 — Camadas</h3>
+          <p>A Auth, e depois a Video e o processor, separam Api, Application, Domain e Infra. A persistência fica atrás de interface.</p>
+        </article>
+        <article class="adr">
+          <h3>ADR-006 — JWT com HMAC</h3>
+          <p>O token é JWT assinado com HMAC-SHA256, não criptografado, com login e e-mail, por 30 minutos. Não há revogação: expirado, autentica de novo. A conta <code>Adm</code> é reconhecida pelo login no token.</p>
+        </article>
+        <article class="adr">
+          <h3>ADR-008 — A Video lê o JWT sozinha</h3>
+          <p>A Video API não chama a Auth e não referencia os projetos dela. Confere o HMAC no processo, com a mesma chave. Assim o envio não depende do banco de usuários.</p>
+        </article>
+        <article class="adr">
+          <h3>ADR-009 — Contrato do envio e da fila</h3>
+          <p><code>POST /videos</code> recebe o campo <code>arquivo</code>. A fila <code>processamento</code> leva só <code>id</code> e <code>caminho</code>. O binário não entra no Postgres nem na mensagem. O limite local é 200 MB.</p>
+        </article>
+        <article class="adr">
+          <h3>ADR-014 — A listagem sai do Redis</h3>
+          <p>O Postgres continua sendo o registro. <code>lista:{login}</code> é a leitura do usuário. Chave ausente é cache miss: a Video lê o Postgres e preenche de novo. Falha do Redis no envio não desfaz o arquivo nem a fila.</p>
+        </article>
+        <article class="adr">
+          <h3>ADR-017 — Dois processors</h3>
+          <p>O Compose sobe a mesma imagem em <code>processor</code> e <code>processor-2</code>, portas 5300 e 5301. Os dois consomem <code>processamento</code>. A marca <code>marca:{id}</code> do ADR-011 impede o mesmo vídeo nos dois. O Prometheus raspa os dois no job <code>processor</code>.</p>
+        </article>
+      </div>
+
+      <h2>As dezessete decisões</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ADR</th>
+            <th>Decisão</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>001</td><td>Auth em Api, Application, Domain e Infra. Video e processor seguem o mesmo corte.</td></tr>
+          <tr><td>002</td><td>A conta <code>Adm</code> cadastra os usuários. Não há autocadastro.</td></tr>
+          <tr><td>003</td><td>PostgreSQL de usuários no Compose, junto do cadastro.</td></tr>
+          <tr><td>004</td><td>Senha guardada com o PasswordHasher do .NET.</td></tr>
+          <tr><td>005</td><td>Identificador do usuário é um Guid, nascido na gravação.</td></tr>
+          <tr><td>006</td><td>Token JWT assinado com HMAC, 30 minutos, login e e-mail.</td></tr>
+          <tr><td>007</td><td>PostgreSQL de vídeos no Compose, separado do de usuários.</td></tr>
+          <tr><td>008</td><td>A Video API confere o JWT no próprio processo.</td></tr>
+          <tr><td>009</td><td>Envio grava o binário no storage e publica só a referência.</td></tr>
+          <tr><td>010</td><td>Prometheus e Grafana no mesmo Compose. Cada feature acrescenta métrica nesse painel.</td></tr>
+          <tr><td>011</td><td>Fila <code>status</code>, marca <code>marca:{id}</code> e ZIP em <code>{id}/{id}.zip</code>.</td></tr>
+          <tr><td>012</td><td>Métricas do processor entram no Grafana que já existia.</td></tr>
+          <tr><td>013</td><td>A Video API aplica <code>comecou</code>, <code>sucesso</code> e <code>erro</code> no registro. Vídeo fechado não reabre.</td></tr>
+          <tr><td>014</td><td>A listagem do login sai do Redis. O Postgres permanece o registro.</td></tr>
+          <tr><td>015</td><td>O download entrega o ZIP do storage quando o status é <code>concluido</code>.</td></tr>
+          <tr><td>016</td><td>O e-mail de erro sai depois que o status já está <code>erro</code>. O processor não envia.</td></tr>
+          <tr><td>017</td><td>Dois processors na mesma fila, nas portas 5300 e 5301.</td></tr>
+        </tbody>
+      </table>
+
+      <nav class="pager">
+        <a href="arquitetura.html">← Arquitetura</a>
+        <a href="nuvem.html">Nuvem →</a>
+      </nav>
+    </main>
+    <script src="js/guia.js"></script>
+  </body>
+</html>

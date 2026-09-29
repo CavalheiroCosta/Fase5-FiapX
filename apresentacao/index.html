@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X — Guia da apresentação</title>
+    <link rel="stylesheet" href="css/guia.css" />
+  </head>
+  <body>
+    <aside class="menu">
+      <p class="marca">FIAP X</p>
+      <nav>
+        <a href="index.html" aria-current="page">Início</a>
+        <a href="arquitetura.html">Arquitetura</a>
+        <a href="dominio.html">Domínio</a>
+        <a href="nuvem.html">Nuvem</a>
+        <a href="tecnologias.html">Tecnologias</a>
+        <a href="executar.html">Como executar</a>
+      </nav>
+      <p class="atalho">← e → trocam a página.</p>
+    </aside>
+
+    <main class="conteudo">
+      <p class="kicker">Guia da apresentação</p>
+      <h1>Processamento de vídeos</h1>
+      <p class="lede">
+        O usuário envia um vídeo. Dois processors extraem um frame por segundo, gravam um ZIP e a Video API devolve esse arquivo.
+        Três serviços .NET, um front e a infraestrutura sobem juntos no Docker Compose.
+      </p>
+
+      <div class="grade">
+        <a class="cartao" href="arquitetura.html">
+          <span>01</span>
+          Arquitetura do sistema. Serviços, filas e o desenho do Compose.
+        </a>
+        <a class="cartao" href="dominio.html">
+          <span>02</span>
+          Domínio dos serviços e as decisões que valem citar, com ADR.
+        </a>
+        <a class="cartao" href="nuvem.html">
+          <span>03</span>
+          Arquitetura de nuvem. EKS, gateway, balanceador e a fila no ECS.
+        </a>
+        <a class="cartao" href="tecnologias.html">
+          <span>04</span>
+          Tecnologias, o CI que já roda e o CD desenhado para a main.
+        </a>
+        <a class="cartao" href="executar.html">
+          <span>05</span>
+          Como subir o projeto e a ordem do que abrir na câmera.
+        </a>
+      </div>
+
+      <h2>Roteiro de 10 minutos</h2>
+      <ol class="roteiro">
+        <li>
+          <time>0:00</time>
+          <div>Abra esta página. Diga o que o sistema faz e que tudo roda local, sem a nuvem.</div>
+        </li>
+        <li>
+          <time>0:40</time>
+          <div>Arquitetura. Aponte o desenho: Auth, Video API, dois processors, filas <code>processamento</code> e <code>status</code>, dois Postgres, Redis, MinIO, Mailpit, Prometheus e Grafana.</div>
+        </li>
+        <li>
+          <time>2:40</time>
+          <div>Domínio. Fale os três contextos e dois ADRs: a fila leva a referência, não o arquivo; a Video API lê o JWT sozinha.</div>
+        </li>
+        <li>
+          <time>4:10</time>
+          <div>Nuvem. Aponte o API Gateway, o balanceador, o EKS, os dois RDS e o RabbitMQ no ECS.</div>
+        </li>
+        <li>
+          <time>5:20</time>
+          <div>Tecnologias. Passe pelo CI (build, SonarCloud, imagem) e pelo CD, que publica no ECR e atualiza o EKS.</div>
+        </li>
+        <li>
+          <time>6:20</time>
+          <div>Projeto no ar. <code>docker compose up -d --build</code>, front em <code>localhost:5173</code>, cadastro, dois vídeos, ZIP, erro no Mailpit, Grafana e o Actions.</div>
+        </li>
+      </ol>
+
+      <h2>Se sobrar pergunta</h2>
+      <p class="nota">
+        Fora deste corte: baixar o vídeo original, revogar token, autocadastro, papel extra no JWT e a publicação da imagem.
+        O schema de <code>fiapx_usuarios</code> e o de <code>fiapx_videos</code> nascem na subida da Auth e da Video. Não há script SQL separado.
+        Se o front falhar na hora, a coleção Postman em <code>Hacka/postman</code> cobre login, envio, listagem, download e <code>/metrics</code>.
+      </p>
+
+      <nav class="pager">
+        <span></span>
+        <a href="arquitetura.html">Arquitetura →</a>
+      </nav>
+    </main>
+    <script src="js/guia.js"></script>
+  </body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X — Tecnologias</title>
+    <link rel="stylesheet" href="css/guia.css" />
+  </head>
+  <body>
+    <aside class="menu">
+      <p class="marca">FIAP X</p>
+      <nav>
+        <a href="index.html">Início</a>
+        <a href="arquitetura.html">Arquitetura</a>
+        <a href="dominio.html">Domínio</a>
+        <a href="nuvem.html">Nuvem</a>
+        <a href="tecnologias.html" aria-current="page">Tecnologias</a>
+        <a href="executar.html">Como executar</a>
+      </nav>
+      <p class="atalho">← e → trocam a página.</p>
+    </aside>
+
+    <main class="conteudo">
+      <p class="kicker">Tecnologias utilizadas</p>
+      <h1>Stack, CI e CD</h1>
+      <p class="lede">
+        Os três serviços são .NET 10 no mesmo repositório. O front é HTML, CSS e JavaScript com Vite, sem framework.
+        O CI já barra o pull request. O CD entra no push da main: publica as imagens e atualiza o ambiente.
+      </p>
+
+      <h2>O que cada parte usa</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Parte</th>
+            <th>Tecnologia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Serviços</td>
+            <td>.NET 10. Auth, Video e processor em Api, Application, Domain e Infra.</td>
+          </tr>
+          <tr>
+            <td>Acesso</td>
+            <td>JWT HMAC-SHA256, 30 minutos. Senha com o PasswordHasher do .NET.</td>
+          </tr>
+          <tr>
+            <td>Front</td>
+            <td>Vite 6. Página estática. No Compose, o proxy aponta <code>/auth</code> para a Auth e <code>/video</code> para a Video API.</td>
+          </tr>
+          <tr>
+            <td>Banco</td>
+            <td>PostgreSQL 16. Um banco de usuários e um de vídeos.</td>
+          </tr>
+          <tr>
+            <td>Fila</td>
+            <td>RabbitMQ 3 com o painel de management. Filas duráveis <code>processamento</code> e <code>status</code>.</td>
+          </tr>
+          <tr>
+            <td>Storage</td>
+            <td>MinIO, API compatível com S3. Bucket <code>videos</code>.</td>
+          </tr>
+          <tr>
+            <td>Processamento</td>
+            <td>ffmpeg, um frame por segundo, JPEG dentro do ZIP.</td>
+          </tr>
+          <tr>
+            <td>Cache e marca</td>
+            <td>Redis 7. <code>lista:{login}</code> e <code>marca:{id}</code>.</td>
+          </tr>
+          <tr>
+            <td>E-mail local</td>
+            <td>Mailpit. SMTP na porta 1025. A mensagem fica na máquina.</td>
+          </tr>
+          <tr>
+            <td>Monitoria</td>
+            <td>Prometheus, Grafana e os exportadores de Postgres e Redis. Cada API expõe <code>GET /metrics</code>.</td>
+          </tr>
+          <tr>
+            <td>Execução local</td>
+            <td>Docker Compose na raiz do repositório.</td>
+          </tr>
+          <tr>
+            <td>Qualidade</td>
+            <td>SonarCloud no mesmo workflow do build.</td>
+          </tr>
+          <tr>
+            <td>Entrega</td>
+            <td>GitHub Actions. Imagens <code>fase5-auth</code>, <code>fase5-video</code>, <code>fase5-processor</code> e a do front.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>CI — em todo pull request</h2>
+      <p class="nota">Arquivo <code>.github/workflows/ci.yml</code>. Dispara em pull request para a <code>main</code>, em push na <code>main</code> e por <code>workflow_dispatch</code>.</p>
+      <div class="trilho">
+        <span class="feito">Checkout</span>
+        <span class="feito">.NET 10 e Java 17</span>
+        <span class="feito">SonarScanner begin</span>
+        <span class="feito">Restore e build Release</span>
+        <span class="feito">Testes Auth, Video e processor</span>
+        <span class="feito">Quality gate</span>
+        <span class="feito">Imagens locais <code>:ci</code></span>
+      </div>
+      <p class="nota">
+        As tags <code>fase5-auth:ci</code>, <code>fase5-video:ci</code> e <code>fase5-processor:ci</code> provam o Dockerfile. O workflow versionado para antes de enviar a imagem ao registro.
+      </p>
+
+      <h2>CD — no push da main</h2>
+      <p class="nota">
+        O mesmo pipeline continua quando o pull request entra na <code>main</code>. Daqui em diante a imagem deixa de ser só local:
+        vai para o ECR e o EKS troca o deployment. O RabbitMQ permanece no ECS e não entra nesse rollout.
+      </p>
+      <div class="trilho">
+        <span class="desenhado">Merge na main</span>
+        <span class="desenhado">Repete o CI</span>
+        <span class="desenhado">Build das quatro imagens</span>
+        <span class="desenhado">Push no ECR com o SHA</span>
+        <span class="desenhado">Rollout no EKS</span>
+        <span class="desenhado">Espera o health</span>
+      </div>
+      <ul>
+        <li>Auth, Video, processor e front sobem no EKS com a tag do commit. O processor mantém no mínimo dois pods na fila <code>processamento</code>.</li>
+        <li>Não há job de SQL. O schema de usuários nasce com a Auth e o de vídeos nasce com a Video API, como no Compose.</li>
+        <li>Segredos vêm do Secrets Manager. O pod lê S3 e SES por IRSA. A chave HMAC é a mesma na Auth e na Video.</li>
+        <li>Se o pod novo não fica pronto, o deployment permanece na versão anterior. O painel do Grafana é o mesmo <code>FIAP X</code>.</li>
+      </ul>
+
+      <nav class="pager">
+        <a href="nuvem.html">← Nuvem</a>
+        <a href="executar.html">Como executar →</a>
+      </nav>
+    </main>
+    <script src="js/guia.js"></script>
+  </body>
+</html>
