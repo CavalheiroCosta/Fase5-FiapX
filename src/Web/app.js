@@ -71,14 +71,14 @@ function abrirArea(login) {
     telaAdm.hidden = false
     telaVideos.hidden = true
     pararLista()
-    carregarUsuarios()
+    carregarUsuarios().catch(() => mostrarAviso('Não foi possível concluir a ação.'))
     return
   }
 
   titulo.textContent = 'Vídeos'
   telaAdm.hidden = true
   telaVideos.hidden = false
-  carregarVideos()
+  carregarVideos().catch(() => mostrarAviso('Não foi possível concluir a ação.'))
 }
 
 async function entrar(evento) {

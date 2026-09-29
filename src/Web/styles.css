@@ -164,7 +164,7 @@ button:active,
 
 button:disabled {
   background: #3a3a1f;
-  color: #707a8a;
+  color: #eaecef;
   cursor: wait;
 }
 
