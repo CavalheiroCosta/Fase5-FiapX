@@ -172,11 +172,11 @@ A Video API avisa o dono depois que o status do vídeo já está `erro`. O proce
 
 No local, a mensagem fica num capturador SMTP no mesmo Compose. O produto é o Mailpit. A mensagem não sai da máquina.
 
-- [ ] O envio acontece depois da gravação do status `erro`.
-- [ ] Se o envio falha, o status permanece `erro`. Não há outra fila para o e-mail.
-- [ ] O Compose sobe o Mailpit com esta feature.
-- [ ] No painel do Mailpit, a mensagem aparece para o e-mail do dono.
-- [ ] Testes unitários, com o e-mail atrás de interface, dentro da cobertura de 80%.
-- [ ] A métrica do envio entra no mesmo Grafana.
+- [x] O envio acontece depois da gravação do status `erro`.
+- [x] Se o envio falha, o status permanece `erro`. Não há outra fila para o e-mail.
+- [x] O Compose sobe o Mailpit com esta feature.
+- [x] No painel do Mailpit, a mensagem aparece para o e-mail do dono.
+- [x] Testes unitários, com o e-mail atrás de interface, dentro da cobertura de 80%.
+- [x] A métrica do envio entra no mesmo Grafana.
 
 Fora desta feature: publicação da imagem e deploy.
