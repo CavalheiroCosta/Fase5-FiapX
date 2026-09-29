@@ -4,12 +4,24 @@ namespace Processor.Infra.Ffmpeg;
 
 public sealed class ExecutorFfmpeg : IExecutorProcesso
 {
+    public const string CaminhoPadrao = "/usr/bin/ffmpeg";
+
+    private readonly string _caminho;
+
+    public ExecutorFfmpeg(string caminho)
+    {
+        if (string.IsNullOrWhiteSpace(caminho) || !Path.IsPathRooted(caminho))
+            throw new ArgumentException("O caminho do ffmpeg precisa ser absoluto.", nameof(caminho));
+
+        _caminho = caminho;
+    }
+
     public async Task<int> ExecutarAsync(string entrada, string padraoSaida, CancellationToken cancellationToken)
     {
         using var processo = new Process();
         processo.StartInfo = new ProcessStartInfo
         {
-            FileName = "ffmpeg",
+            FileName = _caminho,
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardError = true,

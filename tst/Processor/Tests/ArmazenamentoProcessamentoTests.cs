@@ -158,20 +158,21 @@ public class QuebraVideoTests
     [Fact]
     public async Task Executor_falha_sem_video_ou_sem_binario()
     {
-        var executor = new ExecutorFfmpeg();
+        var executor = new ExecutorFfmpeg(Path.Combine(Path.GetTempPath(), "fiapx-ffmpeg-ausente"));
 
-        try
-        {
-            var codigo = await executor.ExecutarAsync(
-                Path.Combine(Path.GetTempPath(), "fiapx-video-ausente.mp4"),
-                Path.Combine(Path.GetTempPath(), "fiapx-frame-%04d.jpg"),
-                CancellationToken.None);
-            Assert.NotEqual(0, codigo);
-        }
-        catch (System.ComponentModel.Win32Exception)
-        {
-            Assert.True(true);
-        }
+        await Assert.ThrowsAsync<System.ComponentModel.Win32Exception>(() => executor.ExecutarAsync(
+            Path.Combine(Path.GetTempPath(), "fiapx-video-ausente.mp4"),
+            Path.Combine(Path.GetTempPath(), "fiapx-frame-%04d.jpg"),
+            CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("ffmpeg")]
+    public void Executor_recusa_caminho_que_nao_e_absoluto(string caminho)
+    {
+        Assert.Throws<ArgumentException>(() => new ExecutorFfmpeg(caminho));
     }
 
     [Fact]

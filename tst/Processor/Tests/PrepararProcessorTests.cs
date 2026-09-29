@@ -56,6 +56,7 @@ public class PrepararProcessorTests
         Assert.IsType<FilaStatus>(provedor.GetRequiredService<IFilaStatus>());
         Assert.IsType<MarcaProcessamento>(provedor.GetRequiredService<IMarcaVideo>());
         Assert.IsType<QuebraVideoFfmpeg>(provedor.GetRequiredService<IQuebraVideo>());
+        Assert.IsType<ExecutorFfmpeg>(provedor.GetRequiredService<IExecutorProcesso>());
         Assert.Equal(2, servicos.Count(descritor => descritor.ServiceType == typeof(IHostedService)));
         Assert.IsType<ClienteObjetoS3>(provedor.GetRequiredService<IClienteObjeto>());
 
@@ -87,6 +88,19 @@ public class PrepararProcessorTests
             NullLogger<ConsumidorHostedService>.Instance);
 
         Assert.IsType<ConsumidorHostedService>(servico);
+    }
+
+    [Fact]
+    public void Usa_o_caminho_absoluto_configurado_do_ffmpeg()
+    {
+        var servicos = new ServiceCollection();
+        var valores = Real();
+        valores["Ffmpeg:Caminho"] = "/usr/local/bin/ffmpeg";
+
+        servicos.AddInfrastructure(Configuracao(valores));
+        using var provedor = servicos.BuildServiceProvider();
+
+        Assert.IsType<ExecutorFfmpeg>(provedor.GetRequiredService<IExecutorProcesso>());
     }
 
     [Fact]

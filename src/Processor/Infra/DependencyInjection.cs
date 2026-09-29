@@ -61,7 +61,11 @@ public static class DependencyInjection
         services.AddSingleton(_ => new ComandoMarcaRedis(redis));
         services.AddSingleton<IMarcaVideo>(servico => new MarcaProcessamento(servico.GetRequiredService<ComandoMarcaRedis>()));
 
-        services.AddSingleton<IExecutorProcesso, ExecutorFfmpeg>();
+        var caminhoFfmpeg = configuration["Ffmpeg:Caminho"];
+        if (string.IsNullOrWhiteSpace(caminhoFfmpeg))
+            caminhoFfmpeg = ExecutorFfmpeg.CaminhoPadrao;
+
+        services.AddSingleton<IExecutorProcesso>(_ => new ExecutorFfmpeg(caminhoFfmpeg));
         services.AddSingleton<IQuebraVideo, QuebraVideoFfmpeg>();
 
         services.AddSingleton(new OpcoesFila(uriFila, processamento, status));
