@@ -1,0 +1,193 @@
+:root {
+  color: #1c2430;
+  background: #f4f1ea;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+}
+
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  background: #1f3a34;
+  color: #f7f4ee;
+}
+
+.marca {
+  margin: 0;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 650;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+main {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+section {
+  display: grid;
+  gap: 1rem;
+}
+
+form,
+.rolagem,
+.nota {
+  background: #fffdf8;
+  border: 1px solid #e2d9cc;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #cfc4b4;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.acoes,
+.linha-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.linha-titulo {
+  justify-content: space-between;
+}
+
+button,
+.botao {
+  display: inline-block;
+  padding: 0.5rem 0.85rem;
+  border: 0;
+  border-radius: 6px;
+  background: #1f3a34;
+  color: #f7f4ee;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.secundario,
+.botao.secundario {
+  background: #efe7db;
+  color: #1c2430;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.andamento {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  color: #1f3a34;
+  font-weight: 650;
+}
+
+.andamento::before {
+  content: "";
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.55rem 0.4rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #eee4d6;
+}
+
+th {
+  font-size: 0.8rem;
+  color: #5c6570;
+}
+
+.celula-id {
+  font-family: Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.aviso {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fde8e4;
+  color: #7a261c;
+}
+
+.nota {
+  margin: 0;
+  color: #3d4652;
+}
+
+.rolagem {
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  .grade {
+    grid-template-columns: 1fr;
+  }
+}

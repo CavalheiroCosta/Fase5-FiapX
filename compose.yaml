@@ -253,6 +253,21 @@ services:
       prometheus:
         condition: service_started
 
+  web:
+    build:
+      context: src/Web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      AUTH_PROXY: http://auth:8080
+      VIDEO_PROXY: http://video:8080
+    depends_on:
+      auth:
+        condition: service_started
+      video:
+        condition: service_started
+
 volumes:
   fiapx_usuarios:
   fiapx_videos:

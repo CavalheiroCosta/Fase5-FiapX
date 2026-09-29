@@ -4,6 +4,7 @@
 **/.vs
 **/bin
 **/obj
+**/node_modules
 coverage
 planning
 tst

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FIAP X</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topo">
+      <div>
+        <p class="marca">FIAP X</p>
+        <h1 id="titulo">Entrar</h1>
+      </div>
+      <button id="sair" type="button" hidden>Sair</button>
+    </header>
+
+    <main>
+      <p id="aviso" class="aviso" hidden></p>
+
+      <section id="tela-login">
+        <form id="form-login">
+          <label>
+            Usuário
+            <input name="login" autocomplete="username" required />
+          </label>
+          <label>
+            Senha
+            <input name="senha" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Entrar</button>
+        </form>
+      </section>
+
+      <section id="tela-adm" hidden>
+        <form id="form-criar">
+          <h2>Novo usuário</h2>
+          <div class="grade">
+            <label>
+              Login
+              <input name="login" autocomplete="off" required />
+            </label>
+            <label>
+              Senha
+              <input name="senha" type="password" autocomplete="new-password" required />
+            </label>
+            <label>
+              Nome
+              <input name="nome" autocomplete="name" required />
+            </label>
+            <label>
+              E-mail
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+          </div>
+          <button type="submit">Cadastrar</button>
+        </form>
+
+        <h2>Usuários</h2>
+        <div class="rolagem">
+          <table>
+            <thead>
+              <tr>
+                <th>Login</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lista-usuarios"></tbody>
+          </table>
+        </div>
+
+        <form id="form-alterar" hidden>
+          <h2>Alterar usuário</h2>
+          <p id="alterar-login" class="nota"></p>
+          <div class="grade">
+            <label>
+              Nome
+              <input name="nome" required />
+            </label>
+            <label>
+              E-mail
+              <input name="email" type="email" required />
+            </label>
+            <label>
+              Nova senha
+              <input name="senha" type="password" autocomplete="new-password" required />
+            </label>
+          </div>
+          <div class="acoes">
+            <button type="submit">Salvar</button>
+            <button id="cancelar-alterar" type="button">Cancelar</button>
+          </div>
+        </form>
+
+        <h2>Monitoramento</h2>
+        <p class="nota">O Grafana entra com usuário <code>fiapx</code> e senha <code>fiapx</code>.</p>
+        <div class="acoes">
+          <a class="botao" href="http://localhost:3000/d/fiapx" target="_blank" rel="noopener">Abrir Grafana</a>
+          <a class="botao" href="http://localhost:9090/targets" target="_blank" rel="noopener">Abrir Prometheus</a>
+        </div>
+      </section>
+
+      <section id="tela-videos" hidden>
+        <form id="form-envio">
+          <h2>Enviar vídeo</h2>
+          <label>
+            Arquivo
+            <input name="arquivo" type="file" accept="video/*" required />
+          </label>
+          <p id="envio-andamento" class="andamento" hidden>Enviando o vídeo…</p>
+          <button id="enviar" type="submit">Enviar</button>
+        </form>
+
+        <div class="linha-titulo">
+          <h2>Meus vídeos</h2>
+          <button id="atualizar" type="button">Atualizar</button>
+        </div>
+        <div class="rolagem">
+          <table>
+            <thead>
+              <tr>
+                <th>Identificador</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lista-videos"></tbody>
+          </table>
+        </div>
+        <p id="vazio" class="nota" hidden>Nenhum vídeo enviado.</p>
+        <p id="nota-erro" class="nota" hidden>
+          Quando o status é erro, o aviso vai para o e-mail do dono. No ambiente local a mensagem fica no
+          <a href="http://localhost:8025" target="_blank" rel="noopener">Mailpit</a>.
+        </p>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
