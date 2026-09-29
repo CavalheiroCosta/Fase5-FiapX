@@ -44,18 +44,20 @@ services:
       retries: 10
 
   minio:
-    image: minio/minio:latest
+    image: alpine/minio:RELEASE.2025-10-15T17-29-55Z
+    user: "0:0"
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: fiapx
       MINIO_ROOT_PASSWORD: fiapxfiapx # NOSONAR credencial só do ambiente local
+      MINIO_PROMETHEUS_AUTH_TYPE: public
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
       - fiapx_minio:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9000/minio/health/live"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -65,6 +67,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: fiapx
       RABBITMQ_DEFAULT_PASS: fiapx
+    volumes:
+      - ./compose/monitoramento/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -98,6 +102,62 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+
+  postgres-exporter-usuarios:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    environment:
+      DATA_SOURCE_URI: postgres-usuarios:5432/fiapx_usuarios?sslmode=disable
+      DATA_SOURCE_USER: fiapx
+      DATA_SOURCE_PASS: fiapx # NOSONAR credencial só do ambiente local
+    depends_on:
+      postgres-usuarios:
+        condition: service_healthy
+
+  postgres-exporter-videos:
+    image: prometheuscommunity/postgres-exporter:v0.20.1
+    environment:
+      DATA_SOURCE_URI: postgres-videos:5432/fiapx_videos?sslmode=disable
+      DATA_SOURCE_USER: fiapx
+      DATA_SOURCE_PASS: fiapx # NOSONAR credencial só do ambiente local
+    depends_on:
+      postgres-videos:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./compose/monitoramento/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      auth:
+        condition: service_started
+      video:
+        condition: service_started
+      postgres-exporter-usuarios:
+        condition: service_started
+      postgres-exporter-videos:
+        condition: service_started
+      minio:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:13.0.9
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: fiapx
+      GF_SECURITY_ADMIN_PASSWORD: fiapx # NOSONAR credencial só do ambiente local
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/fiapx.json
+    volumes:
+      - ./compose/monitoramento/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./compose/monitoramento/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      prometheus:
+        condition: service_started
 
 volumes:
   fiapx_usuarios:
