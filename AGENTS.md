@@ -24,7 +24,7 @@ Antes de mudar arquitetura ou fluxo, leia `planning/planning.md`. O corte da Aut
 
 ## Ambiente local
 
-O Docker Compose sobe PostgreSQL (banco de usuários e banco de vídeos), Redis, RabbitMQ, MinIO, Prometheus e Grafana. Os serviços apontam para esse compose e o sistema roda sem nuvem.
+O Docker Compose deste corte sobe o PostgreSQL de usuários, o PostgreSQL de vídeos, a Auth API, a Video API, o MinIO e o RabbitMQ. Os serviços apontam para esse compose e o envio roda sem nuvem. Redis, Prometheus e Grafana entram na feature seguinte.
 
 A fila na nuvem usa o mesmo contrato. O produto da nuvem ainda não foi escolhido.
 

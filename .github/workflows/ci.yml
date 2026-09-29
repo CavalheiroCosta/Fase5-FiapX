@@ -18,9 +18,12 @@ env:
   BUILD_CONFIGURATION: Release
   SOLUTION: Fase5-FiapX.slnx
   AUTH_TEST_PROJECT: tst/Auth/Tests/Auth.Tests.csproj
+  VIDEO_TEST_PROJECT: tst/Video/Tests/Video.Tests.csproj
   COVERAGE_DIR: ${{ github.workspace }}/coverage
   DOCKERFILE_PATH: src/Auth/Api/Dockerfile
   LOCAL_IMAGE_NAME: fase5-auth:ci
+  VIDEO_DOCKERFILE_PATH: src/Video/Api/Dockerfile
+  VIDEO_LOCAL_IMAGE_NAME: fase5-video:ci
 
 jobs:
   ci:
@@ -93,6 +96,21 @@ jobs:
         shell: pwsh
         run: ./.github/scripts/check-auth-coverage.ps1 -CoverageDir "${{ env.COVERAGE_DIR }}"
 
+      - name: Testes da Video com OpenCover
+        run: |
+          dotnet test "${{ env.VIDEO_TEST_PROJECT }}" \
+            --configuration "${{ env.BUILD_CONFIGURATION }}" \
+            --no-build \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory "${{ env.COVERAGE_DIR }}" \
+            -- \
+            DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: Falha se a cobertura de linhas da Video for menor que 80%
+        shell: pwsh
+        run: ./.github/scripts/check-video-coverage.ps1 -CoverageDir "${{ env.COVERAGE_DIR }}"
+
       - name: Encerra a análise do SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -100,3 +118,6 @@ jobs:
 
       - name: Build da imagem da Auth
         run: docker build --file "${{ env.DOCKERFILE_PATH }}" --tag "${{ env.LOCAL_IMAGE_NAME }}" .
+
+      - name: Build da imagem da Video
+        run: docker build --file "${{ env.VIDEO_DOCKERFILE_PATH }}" --tag "${{ env.VIDEO_LOCAL_IMAGE_NAME }}" .
