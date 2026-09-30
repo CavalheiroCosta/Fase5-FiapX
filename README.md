@@ -6,7 +6,7 @@ Três serviços .NET e um front sobem juntos no Docker Compose, com a infraestru
 
 ## Apresentação
 
-O vídeo da entrega está em [`apresentacao/video/FIAP X - VideoApresenta.mp4`](apresentacao/video/FIAP%20X%20-%20VideoApresenta.mp4).
+O vídeo da entrega está em [`apresentacao/video/FIAP X — VideoApresenta.mp4`](apresentacao/video/FIAP%20X%20%E2%80%94%20VideoApresenta.mp4).
 
 O guia ao lado da câmera abre no navegador, sem servidor:
 
