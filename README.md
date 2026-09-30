@@ -8,7 +8,11 @@ Três serviços .NET e um front sobem juntos no Docker Compose, com a infraestru
 
 O vídeo da entrega está em [`apresentacao/video/FIAP X — VideoApresenta.mp4`](apresentacao/video/FIAP%20X%20%E2%80%94%20VideoApresenta.mp4).
 
-O guia ao lado da câmera abre no navegador, sem servidor:
+O guia publicado na `main` abre direto no navegador:
+
+https://htmlpreview.github.io/?https://raw.githubusercontent.com/CavalheiroCosta/Fase5-FiapX/main/apresentacao/index.html
+
+Na máquina, a mesma pasta abre sem servidor:
 
 ```powershell
 start .\apresentacao\index.html
