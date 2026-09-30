@@ -67,6 +67,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: fiapx
       RABBITMQ_DEFAULT_PASS: fiapx
+    tmpfs:
+      - /var/lib/rabbitmq
     volumes:
       - ./compose/monitoramento/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
     ports:
