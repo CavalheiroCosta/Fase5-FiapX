@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tech Challenge — Fase 5 · Grupo 31</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 16mm 14mm 18mm;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: #181a20;
+        font-family: "Segoe UI", Calibri, sans-serif;
+        font-size: 11pt;
+        line-height: 1.45;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 20pt;
+        line-height: 1.2;
+      }
+
+      h2 {
+        margin: 22px 0 8px;
+        padding-bottom: 4px;
+        border-bottom: 1.5px solid #181a20;
+        font-size: 14pt;
+        page-break-after: avoid;
+      }
+
+      h3 {
+        margin: 14px 0 6px;
+        font-size: 12pt;
+        page-break-after: avoid;
+      }
+
+      p {
+        margin: 0 0 8px;
+      }
+
+      .kicker {
+        margin: 0;
+        color: #3a3a1f;
+        font-size: 11pt;
+        font-weight: 600;
+      }
+
+      .sub {
+        margin: 0 0 14px;
+        color: #444;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0 12px;
+        page-break-inside: avoid;
+      }
+
+      th,
+      td {
+        padding: 6px 8px;
+        border: 1px solid #cdd1d6;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f5f5f5;
+        font-size: 10pt;
+      }
+
+      a {
+        color: #1a4f8b;
+        word-break: break-all;
+      }
+
+      ol {
+        margin: 6px 0 10px;
+        padding-left: 20px;
+      }
+
+      li {
+        margin: 0 0 4px;
+      }
+
+      figure {
+        margin: 10px 0 14px;
+        page-break-inside: avoid;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      figcaption {
+        margin-top: 4px;
+        color: #444;
+        font-size: 9pt;
+      }
+
+      .nota {
+        margin-top: 8px;
+        color: #555;
+        font-size: 9pt;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="kicker">Tech Challenge — Fase 5</p>
+    <h1>Processamento de vídeos — FIAP X</h1>
+    <p class="sub">Grupo 31 · Software Architecture | Pós Tech — 14SOAT · FIAP · Documento de entrega</p>
+
+    <h2>1. Identificação</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nome completo</th>
+          <th>RM</th>
+          <th>Curso / turma</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Gelson Chrystiano Cavalheiro da Costa</td>
+          <td>rm369460</td>
+          <td>Software Architecture | Pós Tech — 14SOAT</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Instituição: FIAP. Fase: 5 — Tech Challenge / Hackathon.</p>
+
+    <h2>2. Repositório</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Repositório</th>
+          <th>URL</th>
+          <th>Função</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fase5-FiapX</td>
+          <td><a href="https://github.com/CavalheiroCosta/Fase5-FiapX">https://github.com/CavalheiroCosta/Fase5-FiapX</a></td>
+          <td>Monorepo: Auth API, Video API, Processor, front, Compose, ADRs e guia da apresentação.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Vídeo e documentação</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Campo</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Vídeo (YouTube)</td>
+          <td><a href="https://youtu.be/5EFsx-jkYlM">https://youtu.be/5EFsx-jkYlM</a></td>
+        </tr>
+        <tr>
+          <td>Vídeo no GitHub</td>
+          <td><a href="https://github.com/CavalheiroCosta/Fase5-FiapX/tree/main/apresentacao/video">apresentacao/video</a></td>
+        </tr>
+        <tr>
+          <td>Guia da apresentação</td>
+          <td><a href="https://htmlpreview.github.io/?https://raw.githubusercontent.com/CavalheiroCosta/Fase5-FiapX/main/apresentacao/index.html">HTML preview do guia</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>O vídeo tem no máximo 10 minutos e mostra a documentação, a arquitetura escolhida e o projeto funcionando.</p>
+
+    <h2>4. Arquitetura</h2>
+    <p>
+      O front fala com a Auth e com a Video API. O binário fica no MinIO. As filas carregam referência e resultado, não o arquivo.
+      Dois processors consomem a mesma fila <code>processamento</code>. A Video API é a dona do registro no Postgres de vídeos.
+      O pico de envio fica na fila: a requisição do usuário termina quando a mensagem é publicada.
+    </p>
+    <figure>
+      <img src="figuras/arquitetura-local.png" alt="Arquitetura local do FIAP X no Docker Compose" />
+      <figcaption>Figura 1 — Ambiente local. Auth, Video API, dois processors, filas, dois Postgres, Redis, MinIO, Mailpit, Prometheus e Grafana.</figcaption>
+    </figure>
+
+    <h3>Serviços</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Serviço</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Front</td>
+          <td>Tela em que a pessoa entra, cadastra usuários, envia o vídeo, acompanha o andamento e baixa o ZIP.</td>
+        </tr>
+        <tr>
+          <td>Auth API</td>
+          <td>Reconhece quem pode usar o sistema e emite o token. Não processa vídeo.</td>
+        </tr>
+        <tr>
+          <td>Video API</td>
+          <td>Recebe o vídeo, acompanha o status, lista os envios daquele login, entrega o ZIP e avisa o dono no erro.</td>
+        </tr>
+        <tr>
+          <td>Processor</td>
+          <td>Extrai um frame por segundo, gera o ZIP e devolve o resultado. Não atende o usuário.</td>
+        </tr>
+        <tr>
+          <td>Postgres</td>
+          <td>Um banco de usuários e um de vídeos. O binário não fica no banco.</td>
+        </tr>
+        <tr>
+          <td>MinIO</td>
+          <td>Mantém o vídeo enviado e o ZIP gerado.</td>
+        </tr>
+        <tr>
+          <td>RabbitMQ</td>
+          <td>Filas <code>processamento</code> e <code>status</code>. A mensagem traz a referência, não o arquivo.</td>
+        </tr>
+        <tr>
+          <td>Redis</td>
+          <td>Listagem do login e marca que impede o mesmo vídeo em dois processors.</td>
+        </tr>
+        <tr>
+          <td>Mailpit</td>
+          <td>Recebe o e-mail de erro. A mensagem não sai da máquina.</td>
+        </tr>
+        <tr>
+          <td>Prometheus e Grafana</td>
+          <td>Coleta e o painel <code>FIAP X</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Do envio ao ZIP</h3>
+    <ol>
+      <li>O front autentica na Auth e recebe um JWT HMAC de 30 minutos, com login e e-mail.</li>
+      <li>A Video API grava o arquivo no MinIO, registra <code>aguardando_processamento</code> e publica <code>id</code> e <code>caminho</code>.</li>
+      <li>Um dos processors marca <code>marca:{id}</code> no Redis, extrai os frames e grava o ZIP. Erro não volta para a fila.</li>
+      <li>A Video API aplica <code>em_processamento</code>, <code>concluido</code> ou <code>erro</code>. Vídeo fechado não reabre.</li>
+      <li>A listagem sai do Redis. No concluído, o download entrega o ZIP. No erro, o e-mail sai depois do status gravado.</li>
+    </ol>
+
+    <h2>5. Domínio</h2>
+    <figure>
+      <img src="figuras/dominio.png" alt="Três contextos: Auth, Video API e Processor" />
+      <figcaption>Figura 2 — Três contextos. A Auth não processa vídeo. O processor não escreve no Postgres e não envia e-mail. A Video API lê o JWT sozinha.</figcaption>
+    </figure>
+    <p>
+      As quatro camadas, Api, Application, Domain e Infra, repetem-se na Auth, na Video e no processor.
+      Storage, fila, Redis, e-mail e ffmpeg ficam atrás de interface.
+      As decisões estão em <a href="https://github.com/CavalheiroCosta/Fase5-FiapX/blob/main/docs/adrs/README.md">docs/adrs</a>.
+      As que sustentam o desenho: ADR-001 (camadas), ADR-006 (JWT HMAC), ADR-008 (a Video lê o token no processo), ADR-009 (a fila não carrega o binário), ADR-014 (listagem no Redis) e ADR-017 (dois processors).
+    </p>
+
+    <h2>6. Nuvem indicada</h2>
+    <p>
+      O fluxo é o mesmo do ambiente local. A borda é API Gateway e um balanceador interno.
+      Os serviços .NET sobem no EKS. A fila RabbitMQ fica no ECS, fora do deploy das APIs.
+      Cada contexto tem o próprio RDS Multi-AZ. O storage é S3, a listagem e a marca ficam no ElastiCache, e o e-mail de erro sai pelo SES.
+    </p>
+    <figure>
+      <img src="figuras/nuvem.png" alt="Arquitetura indicada na AWS" />
+      <figcaption>Figura 3 — Nuvem. Gateway, ALB, EKS, RabbitMQ no ECS, dois RDS, ElastiCache, S3, SES, Prometheus, Grafana e ECR.</figcaption>
+    </figure>
+    <p>
+      Na Fase 4, um RDS com banco e role por serviço isolava o dado e custava menos. Pico ou falha atingiam os dois contextos.
+      Aqui a instância é separada porque login e vídeo crescem em ritmos diferentes. O processor escala pela profundidade da fila, com no mínimo dois pods.
+    </p>
+
+    <h2>7. Tecnologias, CI e recursos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Área</th>
+          <th>Tecnologia</th>
+          <th>Motivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Serviços</td>
+          <td>.NET 10</td>
+          <td>Auth, Video e processor, cada um nas quatro camadas.</td>
+        </tr>
+        <tr>
+          <td>Acesso</td>
+          <td>JWT HMAC, 30 minutos</td>
+          <td>O enunciado pede usuário e senha. A Video não chama a Auth a cada request.</td>
+        </tr>
+        <tr>
+          <td>Fila</td>
+          <td>RabbitMQ</td>
+          <td>Segura o pico. Vários processors consomem a mesma fila.</td>
+        </tr>
+        <tr>
+          <td>Banco</td>
+          <td>PostgreSQL 16</td>
+          <td>Um banco por contexto. O schema nasce na subida do serviço.</td>
+        </tr>
+        <tr>
+          <td>Cache</td>
+          <td>Redis 7</td>
+          <td>Listagem do login e marca de processamento.</td>
+        </tr>
+        <tr>
+          <td>Storage</td>
+          <td>MinIO, API S3</td>
+          <td>Vídeo e ZIP fora do banco. Na nuvem, o mesmo contrato vira S3.</td>
+        </tr>
+        <tr>
+          <td>Monitoria</td>
+          <td>Prometheus e Grafana</td>
+          <td>O enunciado pede observabilidade do que já existe.</td>
+        </tr>
+        <tr>
+          <td>CI</td>
+          <td>GitHub Actions e SonarCloud</td>
+          <td>Build, testes, quality gate e imagem local. Cobertura de linhas de 80% por serviço.</td>
+        </tr>
+        <tr>
+          <td>CD</td>
+          <td>ECR e EKS</td>
+          <td>No push da main, a imagem publicada atualiza os Deployments. A fila permanece no ECS.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      Não há script SQL separado. O Compose sobe os dois Postgres, o Redis, o RabbitMQ, o MinIO, o Mailpit, o Prometheus, o Grafana, as APIs e o front.
+      O schema de <code>fiapx_usuarios</code> nasce com a Auth. O de <code>fiapx_videos</code> nasce com a Video API.
+      O comando está no README: <code>docker compose up -d --build</code>.
+    </p>
+
+    <h2>8. O que o enunciado pede</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Requisito</th>
+          <th>Como foi atendido</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Processar mais de um vídeo ao mesmo tempo</td>
+          <td>Dois processors na fila <code>processamento</code>. Vídeos diferentes seguem em paralelo.</td>
+        </tr>
+        <tr>
+          <td>Não perder requisição no pico</td>
+          <td>O envio termina quando a mensagem está na fila. O binário já está no storage.</td>
+        </tr>
+        <tr>
+          <td>Usuário e senha</td>
+          <td>Auth API. JWT de 30 minutos. A conta <code>Adm</code> cadastra os demais.</td>
+        </tr>
+        <tr>
+          <td>Listagem de status</td>
+          <td><code>GET /videos</code> devolve só os vídeos do login, lidos do Redis.</td>
+        </tr>
+        <tr>
+          <td>Aviso no erro</td>
+          <td>E-mail depois que o status já está <code>erro</code>. No local, o Mailpit captura a mensagem.</td>
+        </tr>
+        <tr>
+          <td>Persistência e escala</td>
+          <td>Postgres por contexto, fila e processors horizontais. A nuvem indicada separa EKS, ECS e RDS.</td>
+        </tr>
+        <tr>
+          <td>GitHub, testes e CI/CD</td>
+          <td>Repositório único, testes por serviço e workflow no GitHub Actions.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="nota">Grupo 31 · FIAP Fase 5 · documento de entrega · gerado a partir do guia em apresentacao/ e do enunciado POSTECH — SOAT — Fase 5.</p>
+  </body>
+</html>
