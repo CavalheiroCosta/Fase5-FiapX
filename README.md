@@ -137,6 +137,8 @@ npm run dev
 
 Na câmera: entre como `Adm` / `Adm`, cadastre um usuário e abra os atalhos. Entre com esse usuário, envie mais de um vídeo, baixe o ZIP quando o status for `concluido` e, no erro, mostre o Mailpit. O Grafana é o dashboard `FIAP X`.
 
+A coleção do Postman está em [`postman`](postman). Importe `Hacka-FiapX.postman_collection.json` e o environment `Hacka-FiapX-Local.postman_environment.json`. Ela faz o login, o cadastro, o envio, a listagem, o download, as métricas e a leitura do Mailpit, do MinIO, do RabbitMQ e do Grafana.
+
 Os testes, na raiz:
 
 ```powershell
