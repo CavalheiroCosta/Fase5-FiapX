@@ -1,0 +1,648 @@
+{
+  "info": {
+    "name": "Hacka-FiapX",
+    "description": "O login fica na raiz e grava o token no environment. A pasta auth reúne o CRUD de usuários. A pasta video envia o arquivo para POST /videos, lista com GET /videos e baixa o ZIP com GET /videos/{{videoId}}/download, os três com Authorization: Bearer {{token}}. A pasta ambiente abre o Mailpit, o MinIO, o RabbitMQ e o Grafana. A pasta monitoramento lê GET /metrics da Auth, da Video e dos dois processors, sem token, e confere os alvos do Prometheus.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login devolve o token', function () {",
+              "    pm.response.to.have.status(200);",
+              "    const corpo = pm.response.json();",
+              "    pm.expect(corpo.token).to.be.a('string').and.not.empty;",
+              "    pm.environment.set('token', corpo.token);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"Adm\",\n  \"senha\": \"Adm\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/login",
+        "description": "Endpoint principal. Não exige token. A resposta grava token no environment Hacka-FiapX-Local."
+      }
+    },
+    {
+      "name": "auth",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Criar usuário",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cadastro devolve o id', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const corpo = pm.response.json();",
+                  "    pm.expect(corpo.id).to.be.a('string').and.not.empty;",
+                  "    pm.environment.set('usuarioId', corpo.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"ana\",\n  \"senha\": \"senha-ana\",\n  \"nome\": \"Ana\",\n  \"email\": \"ana@fiapx.local\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/usuarios"
+          }
+        },
+        {
+          "name": "Listar usuários",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios"
+          }
+        },
+        {
+          "name": "Consultar usuário",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Alterar usuário",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Ana Costa\",\n  \"email\": \"ana.costa@email.com\",\n  \"senha\": \"senha-nova\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Remover usuário",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "video",
+      "item": [
+        {
+          "name": "Enviar vídeo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Envio devolve o vídeo aguardando', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const corpo = pm.response.json();",
+                  "    pm.expect(corpo.id).to.be.a('string').and.not.empty;",
+                  "    pm.expect(corpo.status).to.eql('aguardando_processamento');",
+                  "    pm.expect(corpo.caminho).to.be.a('string').and.not.empty;",
+                  "    pm.environment.set('videoId', corpo.id);",
+                  "    pm.environment.set('caminho', corpo.caminho);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "arquivo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Selecione o vídeo neste campo antes de enviar."
+                }
+              ]
+            },
+            "url": "{{videoBaseUrl}}/videos",
+            "description": "Exige o token gravado pelo Login. O arquivo vai para o MinIO. A resposta traz id, status aguardando_processamento e caminho, e grava videoId e caminho no environment. Um dos dois processors publica na fila status. A Video API então grava em_processamento e, em seguida, concluido com o ZIP videos/{id}/{id}.zip, ou erro. No erro, a mensagem aparece no Mailpit em {{mailpitUrl}}."
+          }
+        },
+        {
+          "name": "Listar vídeos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista os vídeos do token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const corpo = pm.response.json();",
+                  "    pm.expect(corpo).to.be.an('array');",
+                  "    const video = corpo.find(item => item.id === pm.environment.get('videoId'));",
+                  "    pm.expect(video).to.be.an('object');",
+                  "    pm.expect(video.status).to.be.a('string').and.not.empty;",
+                  "    if (video.status === 'concluido') {",
+                  "        pm.expect(video.caminhoZip).to.be.a('string').and.not.empty;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/videos",
+            "description": "Exige o token gravado pelo Login. Devolve só os vídeos desse login. A lista sai do Redis. Cada item traz id e status. Quando o status é concluido, também traz caminhoZip."
+          }
+        },
+        {
+          "name": "Baixar ZIP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Download entrega o ZIP do vídeo concluído', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/zip');",
+                  "    pm.expect(pm.response.responseSize).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/videos/{{videoId}}/download",
+            "description": "Exige o token gravado pelo Login. Entrega o ZIP quando o vídeo desse login está concluido. A referência sai do Postgres e o arquivo sai do storage. Sem token, a resposta é 401. Vídeo de outro login, inexistente ou ainda não concluído responde 404."
+          }
+        }
+      ]
+    },
+    {
+      "name": "monitoramento",
+      "item": [
+        {
+          "name": "Métricas da Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Auth expõe métrica sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.text()).to.include('http_server_request_duration');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/metrics",
+            "description": "Não exige token. O texto entra no Prometheus e faz a série /metrics aparecer no painel da Auth."
+          }
+        },
+        {
+          "name": "Métricas da Video",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Video expõe métrica sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.text()).to.include('http_server_request_duration');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/metrics",
+            "description": "Não exige token. O texto entra no Prometheus e faz a série /metrics aparecer no painel da Video. Os contadores fiapx_video_status, fiapx_video_listagem, fiapx_video_download e fiapx_video_email só entram neste texto depois da ação correspondente."
+          }
+        },
+        {
+          "name": "Métricas da Video depois do status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Video conta o status aplicado sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const texto = pm.response.text();",
+                  "    pm.expect(texto).to.include('fiapx_video_status');",
+                  "    pm.expect(texto).to.include('momento');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/metrics",
+            "description": "Não exige token. Rode depois de Enviar vídeo, quando o processor já publicou e a Video já consumiu a fila status. O texto traz fiapx_video_status com o rótulo momento (comecou, sucesso, erro ou ignorado). O painel Video — status aplicado no Grafana em {{grafanaUrl}} lê essa série."
+          }
+        },
+        {
+          "name": "Métricas da Video depois da listagem",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Video conta a listagem sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const texto = pm.response.text();",
+                  "    pm.expect(texto).to.include('fiapx_video_listagem');",
+                  "    pm.expect(texto).to.include('origem');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/metrics",
+            "description": "Não exige token. Rode depois de Listar vídeos. O texto traz fiapx_video_listagem com o rótulo origem (redis ou postgres). O painel Video — listagem no Grafana em {{grafanaUrl}} lê essa série."
+          }
+        },
+        {
+          "name": "Métricas da Video depois do download",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Video conta o download sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const texto = pm.response.text();",
+                  "    pm.expect(texto).to.include('fiapx_video_download');",
+                  "    pm.expect(texto).to.include('resultado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/metrics",
+            "description": "Não exige token. Rode depois de Baixar ZIP. O texto traz fiapx_video_download com o rótulo resultado (entregue ou recusado). O painel Video — download no Grafana em {{grafanaUrl}} lê essa série."
+          }
+        },
+        {
+          "name": "Métricas da Video depois do e-mail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Video conta o e-mail de erro sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const texto = pm.response.text();",
+                  "    pm.expect(texto).to.include('fiapx_video_email');",
+                  "    pm.expect(texto).to.include('resultado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{videoBaseUrl}}/metrics",
+            "description": "Não exige token. Rode depois de um vídeo que terminou em erro. O texto traz fiapx_video_email com o rótulo resultado (enviado ou falhou). O painel Video — e-mail de erro no Grafana em {{grafanaUrl}} lê essa série. A mensagem fica no Mailpit em {{mailpitUrl}}."
+          }
+        },
+        {
+          "name": "Métricas do processor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Processor expõe métrica sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.text()).to.include('http_server_request_duration');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{processorBaseUrl}}/metrics",
+            "description": "Não exige token. Lê o processor em {{processorBaseUrl}}. O texto entra no Prometheus e faz a série /metrics aparecer nesse alvo."
+          }
+        },
+        {
+          "name": "Métricas do segundo processor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('O segundo processor expõe métrica sem token', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.text()).to.include('http_server_request_duration');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{processor2BaseUrl}}/metrics",
+            "description": "Não exige token. Lê o processor-2 em {{processor2BaseUrl}}. Os dois entram no mesmo job processor do Prometheus."
+          }
+        },
+        {
+          "name": "Alvos do Prometheus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Os alvos do que já existe estão no ar', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const alvos = pm.response.json().data.activeTargets;",
+                  "    ['auth', 'video', 'postgres-usuarios', 'postgres-videos', 'minio', 'minio-bucket', 'rabbitmq', 'redis'].forEach(function (nome) {",
+                  "        const alvo = alvos.find(function (item) { return item.labels.job === nome; });",
+                  "        pm.expect(alvo, nome).to.be.an('object');",
+                  "        pm.expect(alvo.health, nome).to.eql('up');",
+                  "    });",
+                  "    const processors = alvos.filter(function (item) { return item.labels.job === 'processor'; });",
+                  "    pm.expect(processors, 'processor').to.have.lengthOf(2);",
+                  "    processors.forEach(function (alvo) {",
+                  "        pm.expect(alvo.health, 'processor').to.eql('up');",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{prometheusUrl}}/api/v1/targets",
+            "description": "Confere auth, video, dois alvos processor, os dois bancos, MinIO, RabbitMQ e Redis em UP. O Grafana em {{grafanaUrl}} soma os dois processors e mostra os painéis Video — status aplicado, Video — listagem, Video — download e Video — e-mail de erro."
+          }
+        }
+      ]
+    },
+    {
+      "name": "ambiente",
+      "item": [
+        {
+          "name": "Mailpit",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('O Mailpit tem o aviso de erro', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const corpo = pm.response.json();",
+                  "    pm.expect(corpo.total).to.be.at.least(1);",
+                  "    const aviso = corpo.messages.find(function (item) {",
+                  "        return item.Subject === 'FIAP X: o vídeo não foi processado';",
+                  "    });",
+                  "    pm.expect(aviso, 'assunto').to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{mailpitUrl}}/api/v1/messages",
+            "description": "Não exige senha. Depois do Compose, a caixa já tem o assunto FIAP X: o vídeo não foi processado."
+          }
+        },
+        {
+          "name": "MinIO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('O MinIO está no ar', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{minioUrl}}/minio/health/live",
+            "description": "API do storage em {{minioUrl}}. O console fica em http://localhost:9001, usuário fiapx, senha fiapxfiapx, bucket videos."
+          }
+        },
+        {
+          "name": "RabbitMQ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('A fila processamento tem dois consumidores', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const fila = pm.response.json();",
+                  "    pm.expect(fila.name).to.eql('processamento');",
+                  "    pm.expect(fila.consumers).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{rabbitUser}}", "type": "string" },
+                { "key": "password", "value": "{{rabbitPass}}", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{rabbitmqUrl}}/api/queues/%2F/processamento",
+            "description": "Painel em {{rabbitmqUrl}}. Usuário e senha saem do environment. A fila processamento tem dois consumidores."
+          }
+        },
+        {
+          "name": "Grafana",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('O Grafana está no ar', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().database).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{grafanaUrl}}/api/health",
+            "description": "Não exige token nesta rota. O painel FIAP X abre em {{grafanaUrl}} com usuário fiapx e senha fiapx."
+          }
+        }
+      ]
+    }
+  ]
+}
